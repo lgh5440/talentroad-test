@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>달란트로드 — 은사·성향 검사 (테스트 4문항)</title>
+<title>달란트로드 — 은사·성향 검사 (표준형 60문항)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <style>
@@ -34,7 +34,7 @@
         하나님이 주신 달란트, 지금 바로 길을 찾아보세요.
       </h2>
       <p class="text-slate-600 font-medium">
-        **테스트 4문항** · 약 1분 · 결과는 참고용입니다. 말씀과 기도로 분별하세요.
+        **표준형 60문항** · 약 10분 · 결과는 참고용입니다. 말씀과 기도로 분별하세요.
       </p>
 
       <div class="grid sm:grid-cols-4 gap-4">
@@ -104,7 +104,7 @@
   <section id="screen-quiz" class="hidden mt-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 sm:p-12">
     <div class="mb-6">
       <div class="flex items-center justify-between text-sm text-slate-600 mb-2 font-medium">
-        <span id="progress-text">0 / 4 (0%)</span>
+        <span id="progress-text">0 / 60 (0%)</span>
       </div>
       <div class="w-full bg-slate-200 rounded-full h-2">
         <div id="progress-bar" class="h-2 rounded-full bg-violet-600 transition-all duration-300" style="width:0%"></div>
@@ -160,7 +160,7 @@ const $ = (s)=>document.querySelector(s);
 /* ===== 설정 ===== */
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbweaLgXpR26lSOEHxn-9ys9UdJLU8liAsW3y9KYNEaTUu3mjZwruK_lBHJxiuTxB-E/exec';
 
-/* ===== 유형 정의(상위 8영역) - 그대로 유지 ===== */
+/* ===== 유형 정의(상위 8영역) ===== */
 const TYPES = [
   { key:'L',  name:'리더십/조직' },
   { key:'C',  name:'돌봄/상담/자비' },
@@ -172,11 +172,12 @@ const TYPES = [
   { key:'R',  name:'창의/혁신' }
 ];
 
-/* ===== 응답 척도 - 그대로 유지 ===== */
+/* ===== 응답 척도 ===== */
 const SCALE_LABELS = ['전혀 아니다','아니다','보통이다','그렇다','매우 그렇다'];
 
-/* ===== 기본검사 4문항 (리더십 영역만 유지) ===== */
+/* ===== 60개 질문 배열 ===== */
 const QUESTIONS = [
+  // 1-30: 갓생(God+生)을 위한 은사 파트 (30문항)
   "새로운 모임(ex. 팀플, 새터)에 가면, 어색한 분위기를 깨고 내가 대화 주제를 던지는 편이다.",
   "'요즘 힘들다'는 친구의 말에 잔소리보다 '너의 마음'을 먼저 읽어주고 공감하는 것이 쉽다.",
   "문제 상황이 생기면 '왜'보다는 '어떻게 해결할지'에 대한 효율적인 아이디어가 바로 떠오른다.",
@@ -207,6 +208,8 @@ const QUESTIONS = [
   "몸이 아프거나 마음이 힘든 사람에게 가장 먼저 다가가 실질적인 도움을 주려는 마음이 강하다.",
   "복잡한 신학적 진리나 성경의 깊은 내용을 탐구하고 정리하는 데서 오는 만족감이 크다.",
   "공동체가 어려울 때, '괜찮아, 우리 함께 다시 해보자!'라며 힘을 북돋아주는 역할을 한다.",
+
+  // 31-45: 나만의 바이브(Vibe): 성향/선호 파트 (15문항)
   "사람들과 만나 대화할수록 배터리가 충전되는 느낌이다.",
   "결과가 조금 아쉽더라도, 목표를 향해 노력했던 '과정'에서 더 많이 배운다고 생각한다.",
   "맡은 일은 어떻게든 '내 선에서' 완벽하게 책임지고 마무리해야 마음이 편하다.",
@@ -222,6 +225,8 @@ const QUESTIONS = [
   "나의 기쁨, 슬픔, 화 같은 감정을 숨기지 않고 솔직하게 표현하는 편이다.",
   "하루를 돌아보며 조용히 묵상하거나 내면의 소리를 듣는 시간을 중요하게 여긴다.",
   "힘들거나 스트레스받을 때, 몸을 움직이는 활동(ex. 운동, 산책)으로 푸는 것이 효과적이다.",
+
+  // 46-60: 미션(Mission) & 비전 파트 (15문항)
   "직업을 고를 때, 연봉(돈)보다 그 일이 주는 '의미와 보람'이 훨씬 더 중요하다.",
   "내가 가진 강점이나 재능(Talent)을 활용해서 다른 사람에게 실질적인 도움을 주고 싶다.",
   "환경 문제, 청소년 인권, 빈곤 등 사회적인 이슈에 적극적으로 관심을 가지고 참여하려 한다.",
@@ -239,16 +244,22 @@ const QUESTIONS = [
   "어떤 직업을 갖든지, 내가 일하는 그곳이 '하나님 나라를 확장하는 통로'가 될 수 있다고 확신한다."
 ];
 
-/* ===== 역문항 인덱스(1-base) - 해당 없음 ===== */
+/* ===== 역문항 인덱스(1-base) ===== */
 const REVERSE = new Set([]);
 
-/* ===== 문항→영역 매핑 (4문항에 맞게 수정) ===== */
+/* ===== 문항→영역 매핑 (60문항에 맞게 수정) ===== */
 const MAP = {
-  L:[1,2,3,4], // 1~4번 문항이 리더십(L)에 해당
-  C:[], S:[], W:[], T:[], M:[], P:[], R:[] // 나머지 영역은 문항 0개
+  L: [1, 8, 17, 25, 30, 52], // 리더십/조직 - 6문항
+  C: [2, 9, 13, 18, 28, 50, 58], // 돌봄/상담/자비 - 7문항
+  S: [4, 7, 10, 14, 24], // 섬김/봉사 - 5문항
+  W: [5, 22, 51], // 예배/예술 - 3문항
+  T: [19, 20, 26, 29, 42, 49], // 가르침/지식 - 6문항
+  M: [15, 21, 48, 59, 60], // 전도/선교/사회 - 5문항
+  P: [6, 23, 44, 55], // 기도/영성 - 4문항
+  R: [3, 11, 12, 16, 27, 41, 53, 54] // 창의/혁신 - 8문항
 };
 
-/* ===== 56가지 조합 설명 및 사역 예시 (추가됨) ===== */
+/* ===== 56가지 조합 설명 및 사역 예시 (기존과 동일) ===== */
 const COMBO = {
   "C+L+M": {title:"새신자 정착 개척자", desc:"돌봄(<span class='combo-key-highlight'>C</span>) 기반의 리더십(<span class='combo-key-highlight'>L</span>)으로 복음 전파(<span class='combo-key-highlight'>M</span>)를 체계화합니다.", examples:["새신자 양육 그룹장","전도팀 리더","국내외 아웃리치 사역 기획 및 인솔","위기 개척교회 컨설팅","관계 전도 훈련 리더"]},
   "C+L+P": {title:"영적 돌봄 리더", desc:"기도(<span class='combo-key-highlight'>P</span>)와 돌봄(<span class='combo-key-highlight'>C</span>)으로 공동체 리더십(<span class='combo-key-highlight'>L</span>)의 영적 깊이를 더합니다.", examples:["중보기도팀 리더","심방/소그룹 리더","영적 돌봄이 필요한 성도 관리","말씀 묵상 모임 리더","금요철야 또는 새벽기도회 기획"]},
@@ -275,70 +286,77 @@ const COMBO = {
   "L+M+R": {title:"교회 부흥 마케터", desc:"창의성(<span class='combo-key-highlight'>R</span>)으로 전도/선교(<span class='combo-key-highlight'>M</span>) 전략을 리드(<span class='combo-key-highlight'>L</span>)합니다.", examples:["교회 미디어 전략 기획","새로운 교회 개척 모델 제시","온라인 플랫폼 통한 전도/선교","창의적 선교 헌금 캠페인","청년부 부흥 전략 수립"]},
   "L+M+S": {title:"실천적 선교 행정가", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 전도(<span class='combo-key-highlight'>M</span>) 활동을 조직적 리더십(<span class='combo-key-highlight'>L</span>)으로 총괄합니다.", examples:["지역사회 선교 리더","이웃 초청 전도 행사 총괄","교회 밖 봉사팀 조직","전문인 선교 단체 조직화","재정/물품 지원 선교"]},
   "L+M+T": {title:"전도 훈련 시스템 구축자", desc:"전도(<span class='combo-key-highlight'>M</span>)와 가르침(<span class='combo-key-highlight'>T</span>)을 결합한 리더십(<span class='combo-key-highlight'>L</span>)으로 전도자를 양성합니다.", examples:["전도 훈련 프로그램 개발 및 인도","리더십 세미나 강사","새신자 집중 교육반 운영","기독교 세계관 전도 훈련","사영리 교육팀 리더"]},
-  "L+M+W": {title:"복음 확산 예배 기획자", desc:"예배(<span class='combo-key-highlight'>W</span>)와 전도(<span class='combo-key-highlight'>M</span>)를 위한 행사를 리드(<span class='combo-key-highlight'>L</span>)합니다.", examples:["예배 기획 및 총괄","대형 집회/페스티벌 인솔","거리 찬양 전도팀 조직","지역 연합 집회 총괄","전도 예배 기획"]},
-  "L+P+R": {title:"비전 기도 디자이너", desc:"기도(<span class='combo-key-highlight'>P</span>)와 리더십(<span class='combo-key-highlight'>L</span>)에 창의성(<span class='combo-key-highlight'>R</span>)을 더해 교회의 비전을 제시합니다.", examples:["교회 비전 기획 및 제시","기도실/공간 혁신","영적 지도력 개발 프로그램","창의적 기도 콘텐츠 제작","영성 중심의 리더십 훈련"]},
-  "L+P+S": {title:"영적 권위의 봉사 리더", desc:"기도(<span class='combo-key-highlight'>P</span>)를 기반으로 섬김(<span class='combo-key-highlight'>S</span>) 사역을 리드(<span class='combo-key-highlight'>L</span>)하며 영적 권위를 세웁니다.", examples:["교회 재정/시설 관리팀 영적 리더","봉사자 영성 관리","구역장/순장 기도회 리더","교회 운영위원회","봉사 사역의 영적 방향 제시"]},
-  "L+P+T": {title:"영성 중심의 멘토 리더", desc:"기도(<span class='combo-key-highlight'>P</span>)와 가르침(<span class='combo-key-highlight'>T</span>)을 통해 조직 리더(<span class='combo-key-highlight'>L</span>)를 세웁니다.", examples:["핵심 제자훈련 리더","리더십 개발 교육","영성 수련회 강사","권사/장로 교육","조직 내 멘토링 시스템 구축"]},
-  "L+P+W": {title:"영감 있는 예배 인도자", desc:"예배(<span class='combo-key-highlight'>W</span>)와 기도(<span class='combo-key-highlight'>P</span>)를 통해 공동체를 리드(<span class='combo-key-highlight'>L</span>)하는 영적 지도자입니다.", examples:["예배 인도자(Worship Leader)","예배 기획/행정 총괄","예배 중보팀 조직","예배자 훈련 시스템","영적 권위 있는 예배 인도"]},
-  "L+R+S": {title:"시설/행정 혁신 리더", desc:"창의성(<span class='combo-key-highlight'>R</span>)으로 섬김(<span class='combo-key-highlight'>S</span>)과 행정(<span class='combo-key-highlight'>L</span>)을 효율화합니다.", examples:["교회 시설 리모델링 총괄","교회 로고/브랜드 디자인","봉사 시스템 디지털화","다음 세대 공간 디자인","교회 환경 미화 총괄"]},
-  "L+R+T": {title:"교육 시스템 설계자", desc:"창의적(<span class='combo-key-highlight'>R</span>) 관점으로 가르침(<span class='combo-key-highlight'>T</span>)과 교육 행정(<span class='combo-key-highlight'>L</span>) 시스템을 혁신합니다.", examples:["교육 커리큘럼 혁신","교재/콘텐츠 개발팀 리더","기독교 인문학 강좌 개설","미디어 교육 플랫폼 구축","청년 창업/진로 코칭 리더"]},
-  "L+R+W": {title:"창조적 예배 연출가", desc:"창의성(<span class='combo-key-highlight'>R</span>)을 발휘하여 예배(<span class='combo-key-highlight'>W</span>)를 리드(<span class='combo-key-highlight'>L</span>)하며 예술적 영감을 불어넣습니다.", examples:["창조적 예배 기획(테마/구성)","미디어팀 조직 및 관리","예배당 무대 디자인 총괄","문화 사역팀 리더","절기별 특별 예배 연출"]},
-  "L+S+T": {title:"행정/교육 총괄자", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 가르침(<span class='combo-key-highlight'>T</span>)의 사역을 조직적으로 리드(<span class='combo-key-highlight'>L</span>)합니다.", examples:["교회 학교 교장/부장","교회 행정 간사 및 시스템 관리","새가족 교육 및 봉사 연결","교회 자원 봉사자 교육","전문 직업인을 위한 훈련"]},
-  "L+S+W": {title:"예배 봉사 시스템 리더", desc:"섬김(<span class='combo-key-highlight'>S</span>)을 조직화(<span class='combo-key-highlight'>L</span>)하여 예배(<span class='combo-key-highlight'>W</span>) 환경을 최적화합니다.", examples:["예배 안내팀/주차팀 총괄","성찬식 준비/진행","교회 시설 관리 및 예배 환경 조성","예배 봉사팀 운영","다음 세대 예배 봉사 훈련"]},
-  "L+T+W": {title:"예배자 양육 디렉터", desc:"예배(<span class='combo-key-highlight'>W</span>)의 원리를 가르치고(<span class='combo-key-highlight'>T</span>) 예배자를 조직적(<span class='combo-key-highlight'>L</span>)으로 훈련합니다.", examples:["예배 인도자 훈련","찬양팀 영적 지도","예배의 원리 교육","예배학 세미나","주일학교 예배 교육 커리큘럼 개발"]},
-  "M+P+R": {title:"선교 콘텐츠 전략가", desc:"창의성(<span class='combo-key-highlight'>R</span>)을 활용해 기도(<span class='combo-key-highlight'>P</span>)와 선교(<span class='combo-key-highlight'>M</span>)를 연결하는 콘텐츠를 만듭니다.", examples:["전도용 미디어 콘텐츠 기획","복음 제시를 위한 새로운 기도 운동","선교사 동원 창의적 캠페인","온라인 전도 플랫폼 개발","선교 관련 기도 앱/툴 개발"]},
-  "M+P+S": {title:"구호 선교 중보자", desc:"기도(<span class='combo-key-highlight'>P</span>)와 섬김(<span class='combo-key-highlight'>S</span>)을 통해 전도/선교(<span class='combo-key-highlight'>M</span>) 사역의 영적 토대를 만듭니다.", examples:["노숙인/취약계층을 위한 기도와 봉사","재해 구호 활동 참여","선교지 구호 물품 정리 및 발송","전도 대상자를 위한 기도와 식사 제공","지역 봉사 연합"]},
-  "M+P+T": {title:"선교 교육 훈련가", desc:"기도(<span class='combo-key-highlight'>P</span>)로 준비하며 전도(<span class='combo-key-highlight'>M</span>) 대상자를 가르치는(<span class='combo-key-highlight'>T</span>) 사역에 집중합니다.", examples:["전도 훈련을 위한 심층 성경 공부","이단 대처 교육 및 기도회","선교지 현지인 사역자 훈련","복음주의 변증 강좌 개설","전도 소그룹 운영"]},
-  "M+P+W": {title:"전도 부흥을 위한 예배자", desc:"예배(<span class='combo-key-highlight'>W</span>)와 기도(<span class='combo-key-highlight'>P</span>)를 통해 전도(<span class='combo-key-highlight'>M</span>)의 문을 엽니다.", examples:["전도 대상자를 위한 특별 예배(열린 예배)","찬양을 통한 중보기도","선교지 영성 훈련","지역 사회 연합 기도회 기획","예배 전도단 운영"]},
-  "M+R+S": {title:"문화 봉사 선교 기획자", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 섬김(<span class='combo-key-highlight'>S</span>)을 통해 효과적인 전도/선교(<span class='combo-key-highlight'>M</span>) 활동을 기획합니다.", examples:["지역 특성에 맞는 창의적 봉사 전도","문화 센터 운영을 통한 접촉","SNS를 통한 선교/봉사 활동 홍보","지역 사회 연합 프로젝트","교회 인근 환경 미화 캠페인"]},
-  "M+R+T": {title:"복음 변증 콘텐츠 제작자", desc:"창의적(<span class='combo-key-highlight'>R</span>) 방법으로 복음(<span class='combo-key-highlight'>M</span>)을 가르치는(<span class='combo-key-highlight'>T</span>) 자료를 만듭니다.", examples:["복음을 쉽게 이해시키는 시각 자료 개발","기독교 진리를 현대적으로 설명하는 강좌","창의적 선교 자료 제작","복음 제시 템플릿 개발","일대일 전도 콘텐츠 개발"]},
-  "M+R+W": {title:"문화 선교 콘텐츠 디자이너", desc:"창의(<span class='combo-key-highlight'>R</span>)로 선교(<span class='combo-key-highlight'>M</span>)용 예배/문화(<span class='combo-key-highlight'>W</span>) 콘텐츠를 만듭니다.", examples:["미디어 예배를 통한 선교","버스킹/찬양 공연 전도","선교 영화/드라마 제작","문화적 코드가 담긴 예배 기획","선교지 특화 예배 개발"]},
-  "M+S+T": {title:"실천적 선교 교육가", desc:"섬김(<span class='combo-key-highlight'>S</span>)을 통해 전도(<span class='combo-key-highlight'>M</span>)하며 실질적인 가르침(<span class='combo-key-highlight'>T</span>)을 제공합니다.", examples:["지역 사회 교육 봉사 (공부방, 멘토링)","봉사를 통한 전도 간증 훈련","선교 바자회 기획 및 교육","선교지 자립 지원 교육","직업 훈련 통한 전도"]},
-  "M+S+W": {title:"지역 초청 예배 봉사자", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 예배(<span class='combo-key-highlight'>W</span>)를 통해 지역 사회 전도(<span class='combo-key-highlight'>M</span>)에 기여합니다.", examples:["지역 사회 초청 찬양 예배","절기 이웃 초청 행사 봉사","해외 선교지 건축/기술 봉사","복음 전달 목적의 찬양/율동팀","봉사 현장에서의 예배"]},
-  "M+T+W": {title:"예배 중심의 전도 강사", desc:"예배(<span class='combo-key-highlight'>W</span>)와 가르침(<span class='combo-key-highlight'>T</span>)을 활용하여 복음(<span class='combo-key-highlight'>M</span>)을 제시하고 훈련합니다.", examples:["예배를 통한 복음 제시 훈련","강해 설교를 통한 전도","예배 후 초신자 교육","예배자 성경 공부 모임","성경적 세계관 전도 훈련"]},
-  "P+R+S": {title:"기도 환경 디자이너", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 섬김(<span class='combo-key-highlight'>S</span>)을 발휘하여 영감 있는 기도(<span class='combo-key-highlight'>P</span>) 환경을 조성합니다.", examples:["교회의 기도 공간 디자인","봉사 활동 중 영감 있는 기도문 작성","성도들의 기도 제목을 창의적으로 정리","기도 요청 자동화 시스템 구축","창의적 섬김과 중보"]},
-  "P+R+T": {title:"영적 지식 콘텐츠 창조자", desc:"기도(<span class='combo-key-highlight'>P</span>)를 바탕으로 창의적(<span class='combo-key-highlight'>R</span>) 교육(<span class='combo-key-highlight'>T</span>) 콘텐츠를 만듭니다.", examples:["창의적 교리/성경 학습 콘텐츠 제작","기도학교 커리큘럼 개발","영적 지식 전수를 위한 미디어 활용","영성 분야 전문 강사","기도문/찬양 작곡"]},
-  "P+R+W": {title:"영감 있는 예배 연출자", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 기도(<span class='combo-key-highlight'>P</span>)를 통해 예배(<span class='combo-key-highlight'>W</span>)의 영적 깊이를 더합니다.", examples:["영적 부흥을 위한 특별 기도회 연출","예배 분위기 개선 및 몰입도 향상","예배 중 영감 있는 비주얼/아트 사용","창의적 찬양과 경배","예배자 영성 코칭"]},
-  "P+S+T": {title:"영성 관리 멘토", desc:"기도(<span class='combo-key-highlight'>P</span>)와 섬김(<span class='combo-key-highlight'>S</span>)을 통해 사역자들을 가르치고(<span class='combo-key-highlight'>T</span>) 지원합니다.", examples:["영적 리더 멘토링","중보기도팀 훈련 및 관리","권사/집사 영성 교육","사역자를 위한 기도 훈련","봉사자의 영적 상태 돌봄"]},
-  "P+S+W": {title:"영적 분위기 섬김자", desc:"예배(<span class='combo-key-highlight'>W</span>)와 섬김(<span class='combo-key-highlight'>S</span>)을 위해 기도(<span class='combo-key-highlight'>P</span>)하며 봉사합니다.", examples:["예배 전 중보 기도회","예배 후 성도들의 개인 기도 제목 섬김","헌금 위원 영적 준비","성도들을 위한 축복 기도 사역","찬양팀 영성 지원"]},
-  "P+T+W": {title:"말씀/기도 훈련 전문가", desc:"예배(<span class='combo-key-highlight'>W</span>)와 가르침(<span class='combo-key-highlight'>T</span>)에 기도(<span class='combo-key-highlight'>P</span>)를 통합하여 성도를 훈련합니다.", examples:["예배 전후 영적 준비 모임 인도","말씀과 기도의 균형 있는 강조","예배학적 관점에서 기도 훈련","예배를 위한 신학적 교육","예배 영적 분위기 조성"]},
-  "R+S+T": {title:"교육 환경 개선 설계자", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 섬김(<span class='combo-key-highlight'>S</span>)을 통해 교육(<span class='combo-key-highlight'>T</span>) 환경을 혁신합니다.", examples:["교회 자료 디자인 및 교육","주일학교 교재/교구 제작","전문 기술 교육 봉사","교회 내 새로운 교육 시스템 개발","젊은 세대 맞춤형 교육 환경 구축"]},
-  "R+S+W": {title:"예술적 섬김 연출가", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 섬김(<span class='combo-key-highlight'>S</span>)을 통해 예배(<span class='combo-key-highlight'>W</span>)에 예술적 요소를 더합니다.", examples:["교회 환경 디자인 봉사","예배 중 시각/청각적 요소 지원","무대 설치/음향/조명 관리","절기별 특별 무대 장치 제작","예배팀 복장/스타일링 조언"]},
-  "R+T+W": {title:"미디어/예술 교육 전문가", desc:"창의성(<span class='combo-key-highlight'>R</span>)을 활용하여 예배(<span class='combo-key-highlight'>W</span>) 관련 지식(<span class='combo-key-highlight'>T</span>)을 교육합니다.", examples:["예배 디자인 교육","미디어 활용 설교/강의","교회 웹사이트/앱 개발 및 교육","예배 콘텐츠 개발(영상, 음악)","시청각 교육 전문가"]},
-  "S+T+W": {title:"실제적 예배 도우미", desc:"섬김(<span class='combo-key-highlight'>S</span>)을 통해 예배(<span class='combo-key-highlight'>W</span>)를 돕고 관련된 지식(<span class='combo-key-highlight'>T</span>)을 나눕니다.", examples:["예배 안내 및 질서 교육","교회 식사 봉사와 신앙 나눔","주일학교 공과 지도","성경 통독반 리더","교회 행사 진행 및 교육"]}
+  "L+M+W": {title:"복음 확산 예배 기획자", desc:"예배(<span class='combo-key-highlight'>W</span>)와 전도(<span class='combo-key-highlight'>M</span>)를 리더십(<span class='combo-key-highlight'>L</span>)으로 연결하여 복음을 확산합니다.", examples:["전도 집회 기획 및 총괄","찬양 전도팀 리더","예배를 통한 선교 전략 수립","문화 예배 기획","복음성가 콘서트 기획"]},
+  "L+P+R": {title:"영성 혁신 리더", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 기도(<span class='combo-key-highlight'>P</span>)를 리더십(<span class='combo-key-highlight'>L</span>)으로 결합하여 영성을 혁신합니다.", examples:["새로운 기도 모임 모델 개발","영성 훈련 프로그램 리더","창의적 중보기도 사역 기획","영성 캠프 총괄","기도원 운영 혁신"]},
+  "L+P+S": {title:"섬김의 영성 리더", desc:"기도(<span class='combo-key-highlight'>P</span>)와 섬김(<span class='combo-key-highlight'>S</span>)을 리더십(<span class='combo-key-highlight'>L</span>)으로 통합합니다.", examples:["봉사팀 영적 리더","기도하는 봉사자 양성","영성과 섬김의 균형 교육","중보기도와 실천 사역 연결","영적 봉사 프로그램 개발"]},
+  "L+P+T": {title:"영성 교육 리더", desc:"기도(<span class='combo-key-highlight'>P</span>)와 가르침(<span class='combo-key-highlight'>T</span>)을 리더십(<span class='combo-key-highlight'>L</span>)으로 결합합니다.", examples:["영성 교육 프로그램 총괄","기도 학교 운영","영성 신학 교육","중보기도 훈련 리더","영성 지도자 양성"]},
+  "L+P+W": {title:"예배 영성 리더", desc:"예배(<span class='combo-key-highlight'>W</span>)와 기도(<span class='combo-key-highlight'>P</span>)를 리더십(<span class='combo-key-highlight'>L</span>)으로 통합합니다.", examples:["예배팀 영적 리더","찬양 기도회 리더","예배 중 기도 사역 총괄","영성 예배 기획","예배자 영성 훈련"]},
+  "L+R+S": {title:"혁신적 섬김 리더", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 섬김(<span class='combo-key-highlight'>S</span>)을 리더십(<span class='combo-key-highlight'>L</span>)으로 결합합니다.", examples:["새로운 봉사 모델 개발","창의적 섬김 프로그램 기획","봉사팀 혁신 리더","지역사회 연결 프로젝트 총괄","섬김의 새로운 방법론 개발"]},
+  "L+R+T": {title:"교육 혁신 리더", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 가르침(<span class='combo-key-highlight'>T</span>)을 리더십(<span class='combo-key-highlight'>L</span>)으로 결합합니다.", examples:["교육 프로그램 혁신 리더","창의적 교수법 개발","교육 콘텐츠 기획 총괄","새로운 학습 모델 제시","교육 기술 도입 리더"]},
+  "L+R+W": {title:"예배 혁신 리더", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 예배(<span class='combo-key-highlight'>W</span>)를 리더십(<span class='combo-key-highlight'>L</span>)으로 결합합니다.", examples:["예배 혁신 총괄","새로운 예배 형태 개발","미디어 예배 기획","창의적 예배 환경 조성","예배팀 혁신 리더"]},
+  "L+S+T": {title:"실무 교육 리더", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 가르침(<span class='combo-key-highlight'>T</span>)을 리더십(<span class='combo-key-highlight'>L</span>)으로 결합합니다.", examples:["봉사자 교육 총괄","실무 훈련 프로그램 리더","섬김의 신학적 교육","봉사팀 리더 양성","실천적 제자훈련 리더"]},
+  "L+S+W": {title:"예배 섬김 리더", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 예배(<span class='combo-key-highlight'>W</span>)를 리더십(<span class='combo-key-highlight'>L</span>)으로 결합합니다.", examples:["예배 봉사팀 총괄","예배 환경 조성 리더","예배 준비팀 리더","예배 후 섬김 조직","예배와 섬김의 통합 리더"]},
+  "L+T+W": {title:"예배 교육 리더", desc:"가르침(<span class='combo-key-highlight'>T</span>)과 예배(<span class='combo-key-highlight'>W</span>)를 리더십(<span class='combo-key-highlight'>L</span>)으로 결합합니다.", examples:["예배 교육 총괄","예배자 훈련 리더","예배학 교육","찬양팀 교육 리더","예배 신학 교육"]},
+  "M+P+R": {title:"창의적 선교 기도자", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 기도(<span class='combo-key-highlight'>P</span>)로 전도/선교(<span class='combo-key-highlight'>M</span>)를 혁신합니다.", examples:["창의적 선교 기도 모임","선교지 중보기도 혁신","기도와 선교의 새로운 연결","선교 기도 콘텐츠 개발","글로벌 중보기도 네트워크"]},
+  "M+P+S": {title:"섬김의 선교 기도자", desc:"기도(<span class='combo-key-highlight'>P</span>)와 섬김(<span class='combo-key-highlight'>S</span>)으로 전도/선교(<span class='combo-key-highlight'>M</span>)를 실천합니다.", examples:["선교지 봉사 및 기도","중보기도와 실천 선교","선교사 지원 봉사","기도하는 봉사자","선교 후원과 중보의 연결"]},
+  "M+P+T": {title:"선교 교육 기도자", desc:"기도(<span class='combo-key-highlight'>P</span>)와 가르침(<span class='combo-key-highlight'>T</span>)으로 전도/선교(<span class='combo-key-highlight'>M</span>)를 깊이 있게 합니다.", examples:["선교 교육과 중보기도","선교학 교육","기도하는 선교 교육자","선교사 훈련과 기도","선교 신학 교육"]},
+  "M+P+W": {title:"예배적 선교 기도자", desc:"예배(<span class='combo-key-highlight'>W</span>)와 기도(<span class='combo-key-highlight'>P</span>)로 전도/선교(<span class='combo-key-highlight'>M</span>)를 풍성하게 합니다.", examples:["선교 예배 기획","찬양을 통한 선교","예배와 선교의 연결","선교지 예배 지원","문화 선교와 예배"]},
+  "M+R+S": {title:"창의적 섬김 선교자", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 섬김(<span class='combo-key-highlight'>S</span>)으로 전도/선교(<span class='combo-key-highlight'>M</span>)를 혁신합니다.", examples:["창의적 선교 봉사","새로운 선교 방법 개발","혁신적 지역사회 섬김","창의적 전도 방법","선교와 봉사의 새로운 연결"]},
+  "M+R+T": {title:"교육 혁신 선교자", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 가르침(<span class='combo-key-highlight'>T</span>)으로 전도/선교(<span class='combo-key-highlight'>M</span>)를 혁신합니다.", examples:["창의적 선교 교육","혁신적 전도 훈련","새로운 선교 교육 모델","선교 콘텐츠 개발","교육을 통한 창의적 선교"]},
+  "M+R+W": {title:"문화 예술 선교자", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 예배/예술(<span class='combo-key-highlight'>W</span>)로 전도/선교(<span class='combo-key-highlight'>M</span>)를 혁신합니다.", examples:["문화 예술을 통한 선교","창의적 예배 선교","미디어 아트 선교","문화 콘텐츠 선교","예술적 전도 방법 개발"]},
+  "M+S+T": {title:"교육적 섬김 선교자", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 가르침(<span class='combo-key-highlight'>T</span>)으로 전도/선교(<span class='combo-key-highlight'>M</span>)를 실천합니다.", examples:["교육 봉사를 통한 선교","섬김의 선교 교육","봉사와 교육의 선교적 연결","지역사회 교육 봉사","선교적 멘토링"]},
+  "M+S+W": {title:"예배적 섬김 선교자", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 전도/선교(<span class='combo-key-highlight'>M</span>)를 실천합니다.", examples:["예배를 통한 섬김 선교","섬김의 예배적 표현","예배 환경 조성을 통한 선교","섬김과 예배의 선교적 통합","찬양과 봉사의 연결"]},
+  "M+T+W": {title:"예배 교육 선교자", desc:"가르침(<span class='combo-key-highlight'>T</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 전도/선교(<span class='combo-key-highlight'>M</span>)를 깊이 있게 합니다.", examples:["예배를 통한 선교 교육","선교적 예배 교육","예배학을 통한 선교","교육적 예배 선교","선교와 예배의 교육적 통합"]},
+  "P+R+S": {title:"창의적 영성 섬김자", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 섬김(<span class='combo-key-highlight'>S</span>)으로 기도/영성(<span class='combo-key-highlight'>P</span>)을 실천합니다.", examples:["창의적 영성 봉사","혁신적 기도 섬김","새로운 영성 실천 방법","창의적 중보기도 봉사","영성과 섬김의 창의적 연결"]},
+  "P+R+T": {title:"영성 교육 혁신가", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 가르침(<span class='combo-key-highlight'>T</span>)으로 기도/영성(<span class='combo-key-highlight'>P</span>)을 혁신합니다.", examples:["창의적 영성 교육","혁신적 기도 교육","새로운 영성 훈련 모델","영성 교육 콘텐츠 개발","기도와 교육의 창의적 통합"]},
+  "P+R+W": {title:"창의적 예배 영성가", desc:"창의성(<span class='combo-key-highlight'>R</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 기도/영성(<span class='combo-key-highlight'>P</span>)을 혁신합니다.", examples:["창의적 영성 예배","혁신적 기도 예배","새로운 영성 예배 모델","예배와 기도의 창의적 통합","영성 예배 콘텐츠 개발"]},
+  "P+S+T": {title:"교육적 영성 섬김자", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 가르침(<span class='combo-key-highlight'>T</span>)으로 기도/영성(<span class='combo-key-highlight'>P</span>)을 실천합니다.", examples:["영성 교육을 통한 섬김","기도하는 교육 봉사","영성과 교육의 섬김적 통합","교육적 영성 지도","섬김의 영성 교육"]},
+  "P+S+W": {title:"예배적 영성 섬김자", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 기도/영성(<span class='combo-key-highlight'>P</span>)을 실천합니다.", examples:["예배를 통한 영성 섬김","기도하는 예배 봉사","영성과 예배의 섬김적 통합","예배적 영성 지도","섬김의 예배 영성"]},
+  "P+T+W": {title:"예배 영성 교육자", desc:"가르침(<span class='combo-key-highlight'>T</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 기도/영성(<span class='combo-key-highlight'>P</span>)을 깊이 있게 합니다.", examples:["예배를 통한 영성 교육","기도하는 예배 교육","영성과 예배의 교육적 통합","예배적 영성 교육","교육적 예배 영성"]},
+  "R+S+T": {title:"교육적 창의 섬김자", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 가르침(<span class='combo-key-highlight'>T</span>)으로 창의/혁신(<span class='combo-key-highlight'>R</span>)을 실천합니다.", examples:["창의적 교육 봉사","혁신적 섬김 교육","새로운 교육 봉사 모델","교육과 섬김의 창의적 통합","창의적 멘토링 봉사"]},
+  "R+S+W": {title:"예배적 창의 섬김자", desc:"섬김(<span class='combo-key-highlight'>S</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 창의/혁신(<span class='combo-key-highlight'>R</span>)을 실천합니다.", examples:["창의적 예배 봉사","혁신적 섬김 예배","새로운 예배 섬김 모델","예배와 섬김의 창의적 통합","창의적 예배 환경 조성"]},
+  "R+T+W": {title:"예배 교육 혁신가", desc:"가르침(<span class='combo-key-highlight'>T</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 창의/혁신(<span class='combo-key-highlight'>R</span>)을 실천합니다.", examples:["창의적 예배 교육","혁신적 교육 예배","새로운 예배 교육 모델","교육과 예배의 창의적 통합","예배 교육 콘텐츠 혁신"]},
+  "S+T+W": {title:"예배 교육 섬김자", desc:"가르침(<span class='combo-key-highlight'>T</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 섬김/봉사(<span class='combo-key-highlight'>S</span>)를 실천합니다.", examples:["예배를 통한 교육 섬김","교육적 예배 봉사","섬김과 교육의 예배적 통합","예배적 교육 섬김","교육 예배 봉사자"]}
 };
 
-/* ===== 상태 및 이벤트 핸들러 - 그대로 유지 ===== */
-let state = { i:0, answers:Array(QUESTIONS.length).fill(null), name:'', gender:'', age:'', region:'', rt:Array(QUESTIONS.length).fill(0) };
-let qStart = 0;
+/* ===== 상태 관리 ===== */
+let state = { i:0, answers:[], rt:[], name:'', gender:'', age:'', region:'' };
+let qStart = 0, submitting = false;
 
-/* ===== 시작 버튼 활성화 & 이벤트 등록 - 그대로 유지 ===== */
-function toggleStartBtn(){
-  const ok = $('#consent').checked && !!$('#inp-gender').value && !!$('#inp-age').value;
-  $('#btn-start').classList.toggle('btn-disabled', !ok);
+/* ===== UI 잠금 함수 ===== */
+function lockNav(lock){
+  submitting = lock;
+  $('#btn-prev').disabled = lock;
+  $('#btn-next').disabled = lock;
+  document.querySelectorAll('input[type="radio"]').forEach(r=>r.disabled=lock);
 }
+
+/* ===== 초기화 ===== */
 document.addEventListener('DOMContentLoaded', ()=>{
-  toggleStartBtn();
-  $('#consent').addEventListener('change', toggleStartBtn);
-  $('#inp-gender').addEventListener('change', toggleStartBtn);
-  $('#inp-age').addEventListener('change', toggleStartBtn);
+  const checkConsent = ()=>{
+    const hasConsent = $('#consent').checked;
+    const hasGender = $('#inp-gender').value;
+    const hasAge = $('#inp-age').value;
+    $('#btn-start').classList.toggle('btn-disabled', !(hasConsent && hasGender && hasAge));
+  };
+
+  $('#consent').addEventListener('change', checkConsent);
+  $('#inp-gender').addEventListener('change', checkConsent);
+  $('#inp-age').addEventListener('change', checkConsent);
 
   $('#btn-start').addEventListener('click', ()=>{
-    if(!$('#consent').checked) return alert('동의가 필요합니다.');
-    if(!$('#inp-gender').value) return alert('성별을 선택해 주세요.');
-    if(!$('#inp-age').value) return alert('연령을 선택해 주세요.');
-
-    state = {
-      i:0,
-      answers:Array(QUESTIONS.length).fill(null),
-      name: ($('#inp-name').value||'').trim(),
-      gender: $('#inp-gender').value,
-      age: $('#inp-age').value,
-      region: $('#inp-region').value || '',
-      rt: Array(QUESTIONS.length).fill(0)
-    };
+    if($('#btn-start').classList.contains('btn-disabled')) return;
+    state.name = $('#inp-name').value.trim();
+    state.gender = $('#inp-gender').value;
+    state.age = $('#inp-age').value;
+    state.region = $('#inp-region').value;
+    state.answers = new Array(QUESTIONS.length).fill(null);
+    state.rt = new Array(QUESTIONS.length).fill(0);
+    state.i = 0;
     showQuiz();
   });
+
+
 
   $('#btn-clear').addEventListener('click', ()=>location.reload());
   $('#btn-prev').addEventListener('click', prev);
@@ -351,7 +369,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 
-/* ===== 화면 전환 - 그대로 유지 ===== */
+/* ===== 화면 전환 ===== */
 function showQuiz(){
   $('#screen-start').classList.add('hidden');
   $('#screen-quiz').classList.remove('hidden');
@@ -365,7 +383,7 @@ function showResult(){
   renderResult();
 }
 
-/* ===== 문항 렌더 - 그대로 유지 ===== */
+/* ===== 문항 렌더 ===== */
 function renderQuestion(){
   const i = state.i, q = QUESTIONS[i];
   $('#q-title').textContent = `Q${i+1}. ${q}`;
@@ -405,7 +423,7 @@ function renderQuestion(){
 }
 function toggleNextBtn(enabled){ $('#btn-next').classList.toggle('btn-disabled', !enabled); }
 
-/* ===== 점수 계산 (역문항 처리 포함) - 그대로 유지 ===== */
+/* ===== 점수 계산 (역문항 처리 포함) ===== */
 function calcScores(){
   const sums = {L:0,C:0,S:0,W:0,T:0,M:0,P:0,R:0};
   const counts = {L:0,C:0,S:0,W:0,T:0,M:0,P:0,R:0};
@@ -425,30 +443,24 @@ function calcScores(){
   }).sort((a,b)=>b.norm-a.norm);
 }
 
-/* ===== 조합키 정렬 & 이름 - 그대로 유지 ===== */
+/* ===== 조합키 정렬 & 이름 ===== */
 function toComboKey(a,b,c){
-  const order = ['C','L','M','P','R','S','T','W']; // C, L, M, P, R, S, T, W 순서로 정렬 (요청된 56개 조합 순서와 동일)
+  const order = ['C','L','M','P','R','S','T','W'];
   return [a,b,c].sort((x,y)=>order.indexOf(x)-order.indexOf(y)).join('+');
 }
 function typeNameByKey(k){ return (TYPES.find(t=>t.key===k)||{}).name || k; }
 
-/* ===== 수정된 결과 렌더 (56가지 조합 내용 적용) ===== */
+/* ===== 결과 렌더 ===== */
 function renderResult(){
   const scores = calcScores();
   const top3 = scores.slice(0,3);
 
-  // 실제 계산된 조합 키 사용
   const comboKey = toComboKey(top3[0].key, top3[1].key, top3[2].key);
   const combo = COMBO[comboKey] || {title:`${comboKey} 조합`, desc:'세 은사가 조화를 이루어 공동체에 독특한 기여를 기대할 수 있습니다.', examples:['조합에 대한 상세 설명이 준비되지 않았습니다.','다른 조합 결과는 연구 중입니다.','본 결과는 참고용이며, 다른 조합도 테스트해 보세요.','말씀과 기도로 분별하시길 권장합니다.',' ']} ;
 
-  // 은사 영역 이름 추출 (사용하지 않음)
-  const areaText = [top3[0].key, top3[1].key, top3[2].key].map(k=>typeNameByKey(k)).join(' · ');
-
-  // 유저 정보 표시
   const nameDisplay = state.name ? state.name + ' 님' : '응답자 님';
   $('#result-sub-info').innerHTML = `${nameDisplay} (${state.gender}, ${state.age})`;
 
-  // 조합 요약 박스 업데이트 (수정)
   const examplesList = combo.examples.map(ex => `<li class="mt-2 text-slate-700">${ex}</li>`).join('');
 
   $('#top3').innerHTML = `
@@ -479,7 +491,6 @@ function renderResult(){
     </article>
   `;
 
-  // 세부 점수 테이블 렌더링
   const tbl = $('#score-table'); tbl.innerHTML='';
   scores.forEach((s, idx)=>{
     const rank = idx + 1;
@@ -500,7 +511,7 @@ function renderResult(){
   });
 }
 
-/* ===== 데이터 저장 - 그대로 유지 ===== */
+/* ===== 데이터 저장 ===== */
 async function saveToSheets(payload){
   try{
     await fetch(WEB_APP_URL, {
@@ -512,8 +523,11 @@ async function saveToSheets(payload){
   }catch(e){ console.error('시트 저장 실패:', e); }
 }
 
-/* ===== 네비게이션 - 그대로 유지 ===== */
+/* ===== 네비게이션 ===== */
 async function next(){
+  // 이미 제출 중이면 중복 실행 방지
+  if(submitting) return;
+  
   const sel = document.querySelector(`input[name="q${state.i}"]:checked`);
   if(!sel){ alert('답변을 선택해야 다음으로 넘어갈 수 있습니다.'); return; }
 
@@ -521,24 +535,44 @@ async function next(){
   state.answers[state.i] = Number(sel.value);
 
   if(state.i >= QUESTIONS.length-1){
-    const scores = calcScores();
-    const payload = {
-      timestamp: new Date().toISOString(),
-      instrumentVersion: 'std60_youth_v1_test4_design_v3', // 버전명 업데이트
-      user: { name: state.name, gender: state.gender, ageGroup: state.age, region: state.region },
-      answers: state.answers,
-      rt_ms: state.rt,
-      scoresRaw: scores.reduce((o,s)=> (o[s.key]=s.sum, o), {}),
-      scoresNorm: scores.reduce((o,s)=> (o[s.key]=s.norm, o), {}),
-      top: scores.slice(0,3).map(s=>({type:s.key, name:s.name, norm:s.norm}))
-    };
-    await saveToSheets(payload);
-    showResult();
+    // 제출 시작 - UI 잠금
+    submitting = true;
+    lockNav(true);
+    
+    // 제출 버튼 텍스트 변경 및 로딩 표시
+    const submitBtn = $('#btn-next');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '제출 중...';
+    submitBtn.classList.add('btn-disabled');
+    
+    try {
+      const scores = calcScores();
+      const payload = {
+        timestamp: new Date().toISOString(),
+        instrumentVersion: 'std60_youth_v1_design_v3',
+        user: { name: state.name, gender: state.gender, ageGroup: state.age, region: state.region },
+        answers: state.answers,
+        rt_ms: state.rt,
+        scoresRaw: scores.reduce((o,s)=> (o[s.key]=s.sum, o), {}),
+        scoresNorm: scores.reduce((o,s)=> (o[s.key]=s.norm, o), {}),
+        top: scores.slice(0,3).map(s=>({type:s.key, name:s.name, norm:s.norm}))
+      };
+      await saveToSheets(payload);
+      showResult();
+    } catch (error) {
+      console.error('제출 실패:', error);
+      alert('제출 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      // 오류 시 UI 복원
+      submitting = false;
+      lockNav(false);
+      submitBtn.textContent = originalText;
+      submitBtn.classList.remove('btn-disabled');
+    }
   } else {
     state.i++; renderQuestion();
   }
 }
-function prev(){ if(state.i>0){ state.i--; renderQuestion(); } }
+function prev(){ if(submitting) return; if(state.i>0){ state.i--; renderQuestion(); } }
 </script>
 </body>
 </html>
