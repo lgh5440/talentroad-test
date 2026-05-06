@@ -6,7 +6,12 @@
 <title>달란트로드 — 은사·성향 검사 (표준형 60문항)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
+  /* 한글 폰트(PDF 출력 시 깨짐 방지) */
+  html, body, #result-card, #result-card * {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Malgun Gothic", "맑은 고딕", sans-serif;
+  }
   /* 선택된 라벨 색상 강조 */
   .choice input:checked + label{ border-color:#6d28d9; box-shadow:0 0 0 3px rgba(109,40,217,.15); background:#faf5ff; }
   /* 비활성화 버튼 투명도 */
@@ -35,6 +40,9 @@
       </h2>
       <p class="text-slate-600 font-medium">
         **표준형 60문항** · 약 10분 · 결과는 참고용입니다. 말씀과 기도로 분별하세요.
+      </p>
+      <p class="text-xs text-slate-500">
+        💡 PC에서 <b>1~5</b>키로 답변, <b>← →</b>로 이전/다음 이동 · 답변은 자동 저장되어 새로고침해도 이어집니다.
       </p>
 
       <div class="grid sm:grid-cols-4 gap-4">
@@ -313,8 +321,25 @@ const COMBO = {
 };
 
 /* ===== 상태 관리 ===== */
+const STORAGE_KEY = 'talentroad_state_v1';
 let state = { i:0, answers:[], rt:[], name:'', gender:'', age:'', region:'' };
 let qStart = 0, submitting = false;
+
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!Array.isArray(s.answers) || s.answers.length !== 60) return null;
+    return s;
+  }catch(e){ return null; }
+}
+function clearState(){
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+}
 
 /* ===== UI 잠금 함수 ===== */
 function lockNav(lock){
@@ -346,15 +371,46 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.answers = new Array(QUESTIONS.length).fill(null);
     state.rt = new Array(QUESTIONS.length).fill(0);
     state.i = 0;
+    saveState();
     showQuiz();
   });
 
+  // 이전 세션 복원
+  const saved = loadState();
+  if(saved){
+    const answered = saved.answers.filter(a=>a!=null).length;
+    if(answered > 0 && answered < QUESTIONS.length){
+      if(confirm(`이전 응답 ${answered}/${QUESTIONS.length}문항이 있습니다. 이어서 하시겠어요?\n(취소 시 새로 시작)`)){
+        state = saved;
+        showQuiz();
+      } else {
+        clearState();
+      }
+    } else {
+      clearState();
+    }
+  }
 
+  $('#btn-clear').addEventListener('click', ()=>{ clearState(); location.reload(); });
 
-  $('#btn-clear').addEventListener('click', ()=>location.reload());
+  // 키보드 단축키: 1~5 선택, ←→ 이전/다음
+  document.addEventListener('keydown', (e)=>{
+    if($('#screen-quiz').classList.contains('hidden')) return;
+    if(submitting) return;
+    const tag = (e.target.tagName||'').toLowerCase();
+    if(tag === 'input' || tag === 'textarea' || tag === 'select') return;
+    if(e.key >= '1' && e.key <= '5'){
+      const radio = document.querySelector(`input[name="q${state.i}"][value="${e.key}"]`);
+      if(radio){ radio.checked = true; radio.dispatchEvent(new Event('change')); e.preventDefault(); }
+    } else if(e.key === 'ArrowRight' || e.key === 'Enter'){
+      if(state.answers[state.i]) { next(); e.preventDefault(); }
+    } else if(e.key === 'ArrowLeft'){
+      prev(); e.preventDefault();
+    }
+  });
   $('#btn-prev').addEventListener('click', prev);
   $('#btn-next').addEventListener('click', next);
-  $('#btn-retry').addEventListener('click', ()=>location.reload());
+  $('#btn-retry').addEventListener('click', ()=>{ clearState(); location.reload(); });
   $('#btn-download').addEventListener('click', ()=>{
     const target = $('#result-card');
     const opt = { margin:10, filename:`달란트로드_결과_${Date.now()}.pdf`, image:{type:'jpeg',quality:0.98}, html2pdf:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} };
@@ -402,6 +458,7 @@ function renderQuestion(){
   document.querySelectorAll(`input[name="q${i}"]`).forEach(r=>{
     r.addEventListener('change', ()=>{
       state.answers[i] = Number(r.value);
+      saveState();
       toggleNextBtn(true);
     });
   });
@@ -551,6 +608,7 @@ async function next(){
         top: scores.slice(0,3).map(s=>({type:s.key, name:s.name, norm:s.norm}))
       };
       await saveToSheets(payload);
+      clearState();
       showResult();
     } catch (error) {
       console.error('제출 실패:', error);
@@ -562,10 +620,10 @@ async function next(){
       submitBtn.classList.remove('btn-disabled');
     }
   } else {
-    state.i++; renderQuestion();
+    state.i++; saveState(); renderQuestion();
   }
 }
-function prev(){ if(submitting) return; if(state.i>0){ state.i--; renderQuestion(); } }
+function prev(){ if(submitting) return; if(state.i>0){ state.i--; saveState(); renderQuestion(); } }
 </script>
 </body>
 </html>
