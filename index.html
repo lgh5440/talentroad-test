@@ -540,6 +540,45 @@
       word-break:break-all;
     }
   }
+
+  /* ===== 이음 패밀리 광고 — 푸터 + 결과 화면 CTA ===== */
+  .eum-family{
+    background:linear-gradient(150deg,#0d1b3e 0%,#1a1050 50%,#1e3a8a 100%);
+    border:1px solid rgba(252,211,77,.25);
+    box-shadow:0 8px 28px rgba(13,27,62,.45);
+    border-radius:16px;
+    padding:18px;
+    margin-top:24px;
+  }
+  .eum-family-title{
+    font-weight:900; font-size:15px; margin-bottom:4px;
+    background:linear-gradient(135deg,#fef3c7 0%,#fcd34d 50%,#a16207 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .eum-family-sub{ font-size:12px; color:rgba(255,255,255,.7); margin-bottom:12px; line-height:1.55; }
+  .eum-family-grid{ display:grid; gap:8px; }
+  .eum-family-grid.cols-3{ grid-template-columns:repeat(3,1fr); }
+  .eum-family-grid.cols-2{ grid-template-columns:repeat(2,1fr); }
+  .eum-family-card{
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    padding:10px 8px; border-radius:12px; text-decoration:none;
+    transition:transform .15s ease;
+  }
+  .eum-family-card:hover{ transform:scale(1.03); }
+  .eum-family-card:active{ transform:scale(.96); }
+  .eum-family-card.is-current{ opacity:.45; cursor:default; }
+  .eum-family-emoji{ font-size:28px; margin-bottom:4px; line-height:1; }
+  .eum-family-name{ font-weight:900; font-size:12px; color:#fff; line-height:1.2; }
+  .eum-family-tag{ font-size:10.5px; color:rgba(255,255,255,.7); margin-top:4px; line-height:1.35; }
+  .eum-family-card.is-current .eum-family-name{ color:rgba(255,255,255,.6); }
+  .eum-family-card.is-current .eum-family-tag{ color:rgba(255,255,255,.4); }
+  .eum-family-current-badge{
+    margin-top:6px; padding:2px 8px; border-radius:999px;
+    background:rgba(255,255,255,.08); color:rgba(255,255,255,.6);
+    font-size:9.5px; font-weight:700; letter-spacing:.05em;
+  }
+  /* PDF 내보내기 시 광고 영역 제거 */
+  #result-card.pdf-export .eum-family{ display:none !important; }
 </style>
 </head>
 <body class="min-h-screen text-slate-100">
@@ -676,6 +715,9 @@
       </div>
 
 
+      <!-- 이음 패밀리 결과 화면 CTA -->
+      <section class="eum-family" data-eum-family data-variant="cta" aria-label="이음 패밀리 다른 앱"></section>
+
       <div class="mt-6 flex justify-center gap-3">
         <button id="btn-retry" type="button" class="px-5 py-3 rounded-xl font-medium transition duration-150">
           다시 검사
@@ -683,11 +725,62 @@
       </div>
     </div>
   </section>
+
+  <!-- 이음 패밀리 본문 푸터 (모든 화면 하단) -->
+  <section class="eum-family max-w-3xl mx-auto" data-eum-family data-variant="footer" aria-label="이음 패밀리 앱"></section>
 </main>
 
 <script>
 /* ===== 헬퍼 ===== */
 const $ = (s)=>document.querySelector(s);
+
+/* ===== 이음 패밀리 — 3개 앱 공통 광고 ===== */
+const EUM_FAMILY = [
+  { key:'talentroad', name:'달란트로드',   tagline:'나의 은사 찾기 · 56유형 검사',     emoji:'🧭', url:'https://lgh5440.github.io/talentroad-test/', accent:'#fcd34d' },
+  { key:'myrealid',   name:'이음 캠프',     tagline:'수련회·모임 운영 도우미',                  emoji:'🏕️', url:'https://eum-camp-template.web.app/',         accent:'#a5b4fc' },
+  { key:'eumplay',    name:'이음 플레이',  tagline:'교회 활동 게임 9종 · 진행 도우미', emoji:'🎲', url:'https://lgh5440.github.io/eum-play/',       accent:'#34d399' },
+];
+const EUM_CURRENT = 'talentroad';
+function buildEumFamilyUrl(target, source, medium){
+  const u = new URL(target.url);
+  u.searchParams.set('utm_source', source);
+  u.searchParams.set('utm_medium', medium);
+  u.searchParams.set('utm_campaign', 'eum-family');
+  return u.toString();
+}
+function renderEumFamily(){
+  document.querySelectorAll('[data-eum-family]').forEach(box => {
+    const variant = box.dataset.variant === 'cta' ? 'cta' : 'footer';
+    const items = variant === 'cta' ? EUM_FAMILY.filter(a => a.key !== EUM_CURRENT) : EUM_FAMILY;
+    const heading = variant === 'cta' ? '✨ 이음 패밀리 다른 앱도 만나보세요' : '이음 패밀리 앱';
+    const sub = variant === 'cta'
+      ? '같은 E:UM 브랜드의 다른 도구들이에요. 마음에 드는 앱을 클릭해 보세요.'
+      : '하나님과 사람을, 사람과 사람을 잇다 — E:UM';
+    const cardsHtml = items.map(app => {
+      const isCurrent = app.key === EUM_CURRENT;
+      const bg = isCurrent
+        ? 'rgba(255,255,255,0.04)'
+        : `linear-gradient(140deg, rgba(255,255,255,0.06), ${app.accent}1f)`;
+      const border = isCurrent ? 'rgba(255,255,255,0.08)' : `${app.accent}55`;
+      const inner = `
+        <span class="eum-family-emoji" aria-hidden="true">${app.emoji}</span>
+        <p class="eum-family-name">${app.name}</p>
+        <p class="eum-family-tag">${app.tagline}</p>
+        ${isCurrent ? '<span class="eum-family-current-badge">현재 앱</span>' : ''}
+      `;
+      if (isCurrent) {
+        return `<div class="eum-family-card is-current" style="background:${bg};border:1px solid ${border}" aria-current="page">${inner}</div>`;
+      }
+      const href = buildEumFamilyUrl(app, EUM_CURRENT, variant);
+      return `<a class="eum-family-card" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="${app.name} 열기 — ${app.tagline}" style="background:${bg};border:1px solid ${border}">${inner}</a>`;
+    }).join('');
+    box.innerHTML = `
+      <header><h3 class="eum-family-title">${heading}</h3><p class="eum-family-sub">${sub}</p></header>
+      <div class="eum-family-grid cols-${items.length}">${cardsHtml}</div>
+    `;
+  });
+}
+document.addEventListener('DOMContentLoaded', renderEumFamily);
 
 /* ===== 설정 ===== */
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbweaLgXpR26lSOEHxn-9ys9UdJLU8liAsW3y9KYNEaTUu3mjZwruK_lBHJxiuTxB-E/exec';
