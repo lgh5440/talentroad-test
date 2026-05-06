@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="utf-8"/>
@@ -8,49 +8,573 @@
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
-  /* 한글 폰트(PDF 출력 시 깨짐 방지) */
-  html, body, #result-card, #result-card * {
-    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Malgun Gothic", "맑은 고딕", sans-serif;
+  :root{
+    --eum-bg-0:#020818;
+    --eum-bg-1:#0a1628;
+    --eum-bg-2:#0f2040;
+    --eum-panel:rgba(15,23,42,.78);
+    --eum-panel-strong:rgba(15,23,42,.92);
+    --eum-line:rgba(148,163,184,.18);
+    --eum-line-strong:rgba(34,211,238,.34);
+    --eum-text:#f8fafc;
+    --eum-muted:#94a3b8;
+    --eum-soft:#cbd5e1;
+    --eum-cyan:#22d3ee;
+    --eum-blue:#2563eb;
+    --eum-violet:#8b5cf6;
+    --eum-gold:#f0bc78;
+    --eum-orange:#f08c28;
+    --eum-danger:#fb7185;
   }
-  /* 선택된 라벨 색상 강조 */
-  .choice input:checked + label{ border-color:#6d28d9; box-shadow:0 0 0 3px rgba(109,40,217,.15); background:#faf5ff; }
-  /* 비활성화 버튼 투명도 */
-  .btn-disabled { opacity:.5; pointer-events:none; }
-  /* 결과 카드 상단 강조 디자인 */
-  .result-header { border-bottom: 2px solid #e5e7eb; padding-bottom: 1.5rem; margin-bottom: 1.5rem; }
-  /* 조합 설명 내 키(L, C, S 등) 강조 */
-  .combo-key-highlight { font-weight: bold; color: #6d28d9; }
+  html, body, #result-card, #result-card *{
+    font-family:"Pretendard Variable", Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  html{
+    min-height:100%;
+    background:var(--eum-bg-0);
+  }
+  *{box-sizing:border-box}
+  *{min-width:0}
+  body{
+    min-height:100vh;
+    min-height:100dvh;
+    color:var(--eum-text);
+    background:
+      radial-gradient(circle at 10% -10%, rgba(34,211,238,.18), transparent 30rem),
+      radial-gradient(circle at 90% 0%, rgba(139,92,246,.16), transparent 28rem),
+      linear-gradient(135deg, var(--eum-bg-0) 0%, var(--eum-bg-1) 50%, var(--eum-bg-2) 100%) !important;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body:before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background-image:
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size:44px 44px;
+    mask-image:linear-gradient(to bottom, rgba(0,0,0,.75), transparent 78%);
+  }
+  .brand-mark{
+    width:3rem;
+    height:3rem;
+    border-radius:1rem;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(240,188,120,.1);
+    border:1px solid rgba(240,188,120,.3);
+    box-shadow:0 0 24px rgba(240,188,120,.28);
+    overflow:hidden;
+  }
+  .brand-mark img{
+    width:2.55rem;
+    height:2.55rem;
+    object-fit:contain;
+    filter:drop-shadow(0 0 10px rgba(240,188,120,.34));
+  }
+  .brand-kicker{
+    color:var(--eum-cyan);
+    letter-spacing:.18em;
+    font-size:.7rem;
+    font-weight:800;
+  }
+  .glass-panel, #screen-start, #screen-quiz, #result-card{
+    background:var(--eum-panel) !important;
+    border:1px solid var(--eum-line) !important;
+    border-radius:1rem !important;
+    box-shadow:0 22px 80px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.05) !important;
+    backdrop-filter:blur(16px);
+  }
+  #screen-start{
+    position:relative;
+    overflow:hidden;
+  }
+  #screen-start:after{
+    content:"";
+    position:absolute;
+    right:-7rem;
+    top:-7rem;
+    width:18rem;
+    height:18rem;
+    border-radius:999px;
+    background:radial-gradient(circle, rgba(34,211,238,.22), transparent 66%);
+    pointer-events:none;
+  }
+  #screen-start:before{
+    content:"";
+    position:absolute;
+    right:2rem;
+    top:2rem;
+    width:13rem;
+    height:13rem;
+    background:url("assets/eum_logo_cutout.png?v=2026050702") center/contain no-repeat;
+    opacity:.08;
+    filter:drop-shadow(0 0 28px rgba(240,188,120,.36));
+    pointer-events:none;
+  }
+  #screen-start > div{position:relative; z-index:1}
+  .choice label{
+    background:rgba(2,8,24,.42) !important;
+    border:1px solid var(--eum-line) !important;
+    color:var(--eum-soft) !important;
+    border-radius:.9rem !important;
+    min-height:3.2rem;
+    transition:transform .15s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
+  }
+  .choice label:hover{
+    transform:translateY(-1px);
+    border-color:rgba(34,211,238,.28) !important;
+    background:rgba(15,23,42,.9) !important;
+  }
+  .choice input:checked + label{
+    border-color:rgba(34,211,238,.72) !important;
+    box-shadow:0 0 0 3px rgba(34,211,238,.16), 0 0 24px rgba(34,211,238,.16) !important;
+    background:linear-gradient(90deg, rgba(6,182,212,.2), rgba(37,99,235,.13)) !important;
+    color:#fff !important;
+  }
+  .btn-disabled{opacity:.45; pointer-events:none}
+  .btn-primary, #btn-start, #btn-next{
+    border:1px solid rgba(34,211,238,.38) !important;
+    background:linear-gradient(135deg, #06b6d4, #2563eb) !important;
+    color:white !important;
+    box-shadow:0 0 24px rgba(6,182,212,.28) !important;
+  }
+  .btn-secondary, #btn-prev, #btn-download, #btn-retry{
+    border:1px solid var(--eum-line) !important;
+    background:rgba(255,255,255,.06) !important;
+    color:var(--eum-soft) !important;
+  }
+  .btn-danger, #btn-clear{
+    border:1px solid rgba(251,113,133,.36) !important;
+    background:rgba(251,113,133,.1) !important;
+    color:#fecdd3 !important;
+  }
+  button{
+    transition:transform .15s ease, filter .15s ease, border-color .15s ease, background .15s ease;
+  }
+  button:hover{filter:brightness(1.08)}
+  button:active{transform:scale(.98)}
+  header, main, section, .glass-panel{
+    max-width:100%;
+  }
+  header, main{
+    width:min(100%,64rem);
+  }
+  main{
+    overflow:hidden;
+  }
+  h1, h2, h3, h4, h5, p, label, button{
+    overflow-wrap:anywhere;
+  }
+  label, .form-label{color:var(--eum-soft) !important}
+  input, select{
+    background:rgba(2,8,24,.62) !important;
+    border:1px solid var(--eum-line) !important;
+    color:var(--eum-text) !important;
+    border-radius:.75rem !important;
+    min-height:2.75rem;
+  }
+  input::placeholder{color:#64748b}
+  select option{background:#0f172a; color:#f8fafc}
+  input:focus, select:focus{
+    outline:none !important;
+    border-color:rgba(34,211,238,.75) !important;
+    box-shadow:0 0 0 3px rgba(34,211,238,.13) !important;
+  }
+  #progress-bar{
+    background:linear-gradient(90deg, var(--eum-cyan), var(--eum-blue)) !important;
+    box-shadow:0 0 18px rgba(34,211,238,.3);
+  }
+  .result-header{
+    border-bottom:1px solid var(--eum-line) !important;
+    padding-bottom:1.5rem;
+    margin-bottom:1.5rem;
+  }
+  .combo-key-highlight{font-weight:900; color:var(--eum-cyan)}
+  #top3 article{
+    background:linear-gradient(135deg, rgba(6,182,212,.14), rgba(139,92,246,.13)) !important;
+    border:1px solid rgba(34,211,238,.28) !important;
+    color:var(--eum-text) !important;
+    box-shadow:0 18px 50px rgba(0,0,0,.28) !important;
+  }
+  #top3 h5, #result-card h3, #result-card h4{color:#fff !important}
+  #top3 p, #top3 li, #result-sub-info{color:var(--eum-soft) !important}
+  #score-table > div{
+    background:rgba(2,8,24,.5) !important;
+    border:1px solid var(--eum-line) !important;
+    color:var(--eum-soft) !important;
+    box-shadow:none !important;
+  }
+  #score-table b, #score-table .text-violet-800, #score-table .text-violet-600{color:var(--eum-cyan) !important}
+  .score-badge{
+    background:rgba(34,211,238,.14) !important;
+    color:#a5f3fc !important;
+    border:1px solid rgba(34,211,238,.26);
+  }
+  .persona-card{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 11rem;
+    gap:1.25rem;
+    align-items:center;
+    margin-top:1.25rem;
+    padding:1.25rem;
+    border-radius:1rem;
+    border:1px solid rgba(240,188,120,.28);
+    background:linear-gradient(135deg, rgba(240,188,120,.12), rgba(6,182,212,.08));
+  }
+  .persona-image{
+    width:100%;
+    max-height:16rem;
+    object-fit:contain;
+    filter:drop-shadow(0 18px 28px rgba(0,0,0,.26));
+  }
+  .persona-label{
+    color:#f0bc78;
+    font-size:.78rem;
+    font-weight:900;
+    letter-spacing:.16em;
+  }
+  .persona-name{
+    color:#fff;
+    font-size:2rem;
+    line-height:1.15;
+    font-weight:900;
+    margin-top:.35rem;
+  }
+  .persona-verse{
+    display:inline-flex;
+    margin-top:.75rem;
+    padding:.35rem .65rem;
+    border-radius:999px;
+    background:rgba(2,8,24,.34);
+    border:1px solid rgba(240,188,120,.22);
+    color:#fde68a;
+    font-size:.82rem;
+    font-weight:800;
+  }
+  .persona-summary{
+    color:var(--eum-soft);
+    margin-top:.75rem;
+    line-height:1.65;
+    font-weight:600;
+  }
+  #result-card.pdf-export{
+    width:760px !important;
+    max-width:760px !important;
+    background:#fff !important;
+    color:#172033 !important;
+    border:0 !important;
+    border-radius:18px !important;
+    box-shadow:none !important;
+    padding:34px !important;
+  }
+  #result-card.pdf-export *{
+    color:#172033 !important;
+  }
+  #result-card.pdf-export .result-header{
+    border-bottom:2px solid #e5e7eb !important;
+    margin-bottom:18px !important;
+    padding-bottom:18px !important;
+  }
+  #result-card.pdf-export #top3 article{
+    background:#f8fafc !important;
+    border:1px solid #dbeafe !important;
+    box-shadow:none !important;
+    text-align:left !important;
+  }
+  #result-card.pdf-export #top3 h5,
+  #result-card.pdf-export #result-card h3,
+  #result-card.pdf-export h3,
+  #result-card.pdf-export h4{
+    color:#0f172a !important;
+  }
+  #result-card.pdf-export .persona-card{
+    grid-template-columns:minmax(0,1fr) 150px;
+    background:#fff7ed !important;
+    border:1px solid #fed7aa !important;
+    page-break-inside:avoid;
+  }
+  #result-card.pdf-export .persona-name{color:#92400e !important}
+  #result-card.pdf-export .persona-label{color:#c2410c !important}
+  #result-card.pdf-export .persona-verse{
+    background:#fffbeb !important;
+    border:1px solid #fde68a !important;
+    color:#92400e !important;
+  }
+  #result-card.pdf-export .persona-summary{color:#334155 !important}
+  #result-card.pdf-export #score-table > div{
+    background:#fff !important;
+    border:1px solid #e2e8f0 !important;
+  }
+  #result-card.pdf-export .score-badge{
+    background:#e0f2fe !important;
+    color:#0369a1 !important;
+    border:1px solid #bae6fd;
+  }
+  /* PDF 출력 시 인터랙티브 요소 숨김 */
+  #result-card.pdf-export #btn-download,
+  #result-card.pdf-export #btn-retry,
+  #result-card.pdf-export .ext-details > summary::after{
+    display:none !important;
+  }
+  #result-card.pdf-export .ext-details > summary{
+    cursor:default !important;
+  }
+
+  /* ===== EXTENDED 영역 (Calling/Verse/Role + 접기형) ===== */
+  .ext-area{
+    margin-top:.4rem;
+    font-size:.78rem;
+    letter-spacing:.12em;
+    color:var(--eum-gold);
+    font-weight:700;
+    text-transform:uppercase;
+  }
+  .ext-label{
+    font-size:.7rem;
+    letter-spacing:.2em;
+    color:var(--eum-cyan);
+    font-weight:800;
+    margin-bottom:.4rem;
+    text-transform:uppercase;
+  }
+  .ext-calling, .ext-verse, .ext-role{
+    text-align:left;
+    margin-top:1.25rem;
+    padding:1rem 1.15rem;
+    border-radius:.85rem;
+    border:1px solid var(--eum-line-strong);
+    background:linear-gradient(135deg, rgba(34,211,238,.06), rgba(139,92,246,.05));
+  }
+  .ext-calling{
+    border:1px solid rgba(240,188,120,.45);
+    background:linear-gradient(135deg, rgba(240,188,120,.10), rgba(240,140,40,.05));
+  }
+  .ext-calling-text{
+    font-size:1.05rem;
+    line-height:1.65;
+    color:var(--eum-gold);
+    font-weight:700;
+    margin:0;
+  }
+  .ext-verse-ref{
+    font-size:.95rem;
+    font-weight:800;
+    color:var(--eum-cyan);
+    margin-bottom:.35rem;
+  }
+  .ext-verse-text{
+    color:var(--eum-soft);
+    line-height:1.6;
+    margin:0;
+    font-size:.95rem;
+  }
+  .ext-role-text{
+    color:var(--eum-text);
+    line-height:1.6;
+    margin:0;
+    font-weight:600;
+  }
+  .ext-details{
+    margin-top:1rem;
+    text-align:left;
+    border:1px solid var(--eum-line);
+    border-radius:.85rem;
+    background:rgba(15,23,42,.45);
+    overflow:hidden;
+  }
+  .ext-details > summary{
+    cursor:pointer;
+    list-style:none;
+    padding:.85rem 1.15rem;
+    font-weight:700;
+    color:var(--eum-text);
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    user-select:none;
+  }
+  .ext-details > summary::-webkit-details-marker{display:none}
+  .ext-details > summary::after{
+    content:"▾";
+    margin-left:auto;
+    color:var(--eum-cyan);
+    transition:transform .2s ease;
+    font-size:.9rem;
+  }
+  .ext-details[open] > summary::after{transform:rotate(-180deg)}
+  .ext-summary-icon{font-size:1rem}
+  .ext-count{
+    font-size:.75rem;
+    font-weight:600;
+    color:var(--eum-muted);
+    margin-left:.35rem;
+  }
+  .ext-list{
+    margin:0;
+    padding:.5rem 1.5rem 1rem 2rem;
+    color:var(--eum-soft);
+    line-height:1.7;
+  }
+  .ext-list li{margin-top:.25rem}
+  .ext-list-ol{list-style:decimal}
+  .ext-list:not(.ext-list-ol){list-style:disc}
+  .ext-hashtags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.4rem;
+    justify-content:center;
+    margin-top:1rem;
+  }
+  .ext-hashtag{
+    display:inline-block;
+    padding:.25rem .65rem;
+    border-radius:9999px;
+    background:rgba(34,211,238,.12);
+    border:1px solid rgba(34,211,238,.3);
+    color:var(--eum-cyan);
+    font-size:.78rem;
+    font-weight:700;
+  }
+
+  /* PDF 출력 시 EXTENDED 영역 라이트 모드 */
+  #result-card.pdf-export .ext-area{color:#a16207 !important}
+  #result-card.pdf-export .ext-label{color:#0369a1 !important}
+  #result-card.pdf-export .ext-calling,
+  #result-card.pdf-export .ext-verse,
+  #result-card.pdf-export .ext-role{
+    background:#fffbeb !important;
+    border:1px solid #fde68a !important;
+    page-break-inside:avoid;
+  }
+  #result-card.pdf-export .ext-verse{
+    background:#eff6ff !important;
+    border:1px solid #bfdbfe !important;
+  }
+  #result-card.pdf-export .ext-role{
+    background:#f0fdf4 !important;
+    border:1px solid #bbf7d0 !important;
+  }
+  #result-card.pdf-export .ext-calling-text{color:#92400e !important}
+  #result-card.pdf-export .ext-verse-ref{color:#1d4ed8 !important}
+  #result-card.pdf-export .ext-verse-text{color:#334155 !important}
+  #result-card.pdf-export .ext-role-text{color:#0f172a !important}
+  #result-card.pdf-export .ext-details{
+    background:#fff !important;
+    border:1px solid #e2e8f0 !important;
+    page-break-inside:avoid;
+  }
+  #result-card.pdf-export .ext-details > summary{
+    color:#0f172a !important;
+    background:#f8fafc !important;
+    border-bottom:1px solid #e2e8f0;
+  }
+  #result-card.pdf-export .ext-details > summary::after{color:#0369a1 !important}
+  #result-card.pdf-export .ext-list{color:#334155 !important}
+  #result-card.pdf-export .ext-count{color:#64748b !important}
+  #result-card.pdf-export .ext-hashtag{
+    background:#e0f2fe !important;
+    color:#0369a1 !important;
+    border:1px solid #bae6fd !important;
+  }
+  @media print{
+    body{background:#fff !important; color:#0f172a !important}
+    #result-card, #top3 article, #score-table > div{
+      background:#fff !important;
+      color:#0f172a !important;
+      box-shadow:none !important;
+    }
+    #result-card *{color:#0f172a !important}
+  }
+  @media (max-width:640px){
+    header{
+      padding-top:1.35rem !important;
+      padding-bottom:1rem !important;
+    }
+    #screen-start, #screen-quiz, #result-card{
+      width:100% !important;
+      max-width:100% !important;
+      margin-left:auto !important;
+      margin-right:auto !important;
+      padding:2rem !important;
+      border-left-width:0 !important;
+      border-right-width:0 !important;
+      border-radius:1rem !important;
+    }
+    main{
+      width:100% !important;
+      max-width:390px !important;
+      padding-left:1rem !important;
+      padding-right:1rem !important;
+    }
+    input, select{
+      width:100% !important;
+      max-width:100% !important;
+    }
+    .persona-card{
+      grid-template-columns:1fr;
+      text-align:center;
+    }
+    .persona-image{
+      max-height:18rem;
+      order:-1;
+    }
+    #screen-start h2{
+      font-size:1.85rem !important;
+      line-height:1.18 !important;
+      letter-spacing:0 !important;
+      word-break:break-all;
+    }
+    #screen-start:before{
+      width:9rem;
+      height:9rem;
+      right:-1.25rem;
+      top:1.5rem;
+      opacity:.06;
+    }
+    #screen-start p, #q-title{
+      line-height:1.55 !important;
+      word-break:break-all;
+    }
+  }
 </style>
 </head>
-<body class="bg-gradient-to-br from-sky-100 to-emerald-100 min-h-screen text-slate-800">
+<body class="min-h-screen text-slate-100">
 
-<header class="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between">
+<header class="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between relative z-10">
   <div class="flex items-center gap-3">
-    <img src="/icons/dove.png" alt="달란트로드" class="h-8 w-8" onerror="this.style.display='none'"/>
-    <h1 class="text-xl font-bold text-violet-700">달란트로드</h1>
+    <span class="brand-mark" aria-hidden><img src="assets/eum_logo_cutout.png?v=2026050702" alt="" /></span>
+    <div>
+      <p class="brand-kicker">TALENT ROAD</p>
+      <h1 class="text-xl font-black text-white">달란트로드</h1>
+    </div>
   </div>
+  <span class="hidden sm:inline-flex rounded-xl px-3 py-2 text-xs font-bold" style="border:1px solid rgba(240,188,120,.32); color:#f0bc78; background:rgba(240,188,120,.08)">은사·성향 검사</span>
 </header>
 
-<main class="max-w-4xl mx-auto px-4 pb-20">
+<main class="max-w-4xl mx-auto px-4 pb-20 relative z-10">
 
-  <section id="screen-start" class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 sm:p-12">
+  <section id="screen-start" class="glass-panel p-8 sm:p-12">
     <div class="space-y-8">
-      <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-800">
+      <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold" style="background:rgba(34,211,238,.1); border:1px solid rgba(34,211,238,.24); color:#67e8f9">
+        표준형 60문항
+      </div>
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight text-white">
         하나님이 주신 달란트, 지금 바로 길을 찾아보세요.
       </h2>
-      <p class="text-slate-600 font-medium">
-        **표준형 60문항** · 약 10분 · 결과는 참고용입니다. 말씀과 기도로 분별하세요.
-      </p>
-      <p class="text-xs text-slate-500">
-        💡 PC에서 <b>1~5</b>키로 답변, <b>← →</b>로 이전/다음 이동 · 답변은 자동 저장되어 새로고침해도 이어집니다.
+      <p class="text-slate-300 font-medium leading-relaxed">
+        약 10분 · 결과는 참고용입니다. 말씀과 기도로 분별하세요.
       </p>
 
       <div class="grid sm:grid-cols-4 gap-4">
-        <label class="block text-sm font-medium text-slate-700">이름(선택)
+        <label class="block text-sm font-medium text-slate-300">이름(선택)
           <input id="inp-name" class="mt-1 w-full rounded-lg border-slate-300 focus:border-violet-600 focus:ring-violet-600 transition duration-150" placeholder="선생님"/>
         </label>
 
-        <label class="block text-sm font-medium text-slate-700">성별 <span class="text-rose-600">*</span>
+        <label class="block text-sm font-medium text-slate-300">성별 <span class="text-rose-300">*</span>
           <select id="inp-gender" class="mt-1 w-full rounded-lg border-slate-300 focus:border-violet-600 focus:ring-violet-600 transition duration-150" required>
             <option value="" selected disabled>선택하세요</option>
             <option>남성</option>
@@ -59,7 +583,7 @@
           </select>
         </label>
 
-        <label class="block text-sm font-medium text-slate-700">연령 <span class="text-rose-600">*</span>
+        <label class="block text-sm font-medium text-slate-300">연령 <span class="text-rose-300">*</span>
           <select id="inp-age" class="mt-1 w-full rounded-lg border-slate-300 focus:border-violet-600 focus:ring-violet-600 transition duration-150" required>
             <option value="" selected disabled>선택하세요</option>
             <option value="10~19세">10~19세</option>
@@ -75,7 +599,7 @@
           </select>
         </label>
 
-        <label class="block text-sm font-medium text-slate-700">지역(선택)
+        <label class="block text-sm font-medium text-slate-300">지역(선택)
           <select id="inp-region" class="mt-1 w-full rounded-lg border-slate-300 focus:border-violet-600 focus:ring-violet-600 transition duration-150">
             <option value="" selected>선택하세요</option>
             <option>서울</option><option>부산</option><option>대구</option><option>인천</option>
@@ -87,58 +611,58 @@
         </label>
       </div>
 
-      <div class="rounded-xl border border-violet-200 bg-violet-50/60 p-4 shadow-sm">
-        <p class="text-sm text-slate-700 leading-6">
-          본 검사는 은사·성향 탐색을 위한 **참고용**입니다. 결과는 신학적 판단과 목회적 상담을 대체하지 않습니다.
-          연구·서비스 개선을 위해 **익명 통계**로 활용될 수 있으며, 개인 식별 정보는 수집하지 않습니다.
+      <div class="rounded-xl p-4 shadow-sm" style="border:1px solid rgba(34,211,238,.2); background:rgba(34,211,238,.07)">
+        <p class="text-sm text-slate-300 leading-6">
+          본 검사는 은사·성향 탐색을 위한 참고용입니다. 결과는 신학적 판단과 목회적 상담을 대체하지 않습니다.
+          연구·서비스 개선을 위해 익명 통계로 활용될 수 있으며, 개인 식별 정보는 수집하지 않습니다.
         </p>
-        <label class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer">
+        <label class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-300 cursor-pointer">
           <input id="consent" type="checkbox" class="h-4 w-4 text-violet-600 border-gray-300 rounded focus:ring-violet-500">
           <span>위 내용을 이해하고 동의합니다.</span>
         </label>
       </div>
 
       <div class="flex flex-wrap gap-4">
-        <button id="btn-start" type="button" class="px-6 py-3 rounded-xl bg-violet-700 text-white font-bold text-lg shadow-md hover:bg-violet-800 transition duration-150 btn-disabled">
+        <button id="btn-start" type="button" class="px-6 py-3 rounded-xl text-white font-bold text-lg shadow-md transition duration-150 btn-disabled">
           검사 시작하기
         </button>
-        <button id="btn-clear" type="button" class="px-6 py-3 rounded-xl border border-rose-400 text-rose-700 font-semibold hover:bg-rose-50 transition duration-150">
+        <button id="btn-clear" type="button" class="px-6 py-3 rounded-xl font-semibold transition duration-150">
           초기화
         </button>
       </div>
     </div>
   </section>
 
-  <section id="screen-quiz" class="hidden mt-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 sm:p-12">
+  <section id="screen-quiz" class="hidden mt-8 glass-panel p-8 sm:p-12">
     <div class="mb-6">
-      <div class="flex items-center justify-between text-sm text-slate-600 mb-2 font-medium">
+      <div class="flex items-center justify-between text-sm text-slate-400 mb-2 font-medium">
         <span id="progress-text">0 / 60 (0%)</span>
       </div>
-      <div class="w-full bg-slate-200 rounded-full h-2">
+      <div class="w-full rounded-full h-2" style="background:rgba(148,163,184,.18)">
         <div id="progress-bar" class="h-2 rounded-full bg-violet-600 transition-all duration-300" style="width:0%"></div>
       </div>
     </div>
 
     <div>
-      <h3 id="q-title" class="text-xl sm:text-2xl font-bold mb-6 text-slate-800">문항 제목</h3>
+      <h3 id="q-title" class="text-xl sm:text-2xl font-bold mb-6 text-white">문항 제목</h3>
       <div id="choices" class="space-y-4"></div>
     </div>
 
     <div class="mt-8 flex items-center justify-between">
-      <button id="btn-prev" type="button" class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-white/80 transition duration-150">이전</button>
-      <button id="btn-next" type="button" class="px-6 py-3 rounded-lg bg-violet-700 text-white font-semibold shadow-md hover:bg-violet-800 transition duration-150">다음</button>
+      <button id="btn-prev" type="button" class="px-5 py-2.5 rounded-lg font-medium transition duration-150">이전</button>
+      <button id="btn-next" type="button" class="px-6 py-3 rounded-lg text-white font-semibold shadow-md transition duration-150">다음</button>
     </div>
   </section>
 
   <section id="screen-result" class="hidden mt-8">
-    <div id="result-card" class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 sm:p-12">
+    <div id="result-card" class="glass-panel p-8 sm:p-12">
       <div class="result-header flex items-start justify-between flex-wrap gap-4">
         <div class="grow">
-          <h3 class="text-3xl font-extrabold mb-1 text-slate-800">나의 달란트 조합</h3>
-          <p id="result-sub-info" class="text-base text-slate-600 font-medium">
+          <h3 class="text-3xl font-extrabold mb-1 text-white">나의 달란트 조합</h3>
+          <p id="result-sub-info" class="text-base text-slate-300 font-medium">
             </p>
         </div>
-        <button id="btn-download" type="button" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition duration-150">
+        <button id="btn-download" type="button" class="px-4 py-2 rounded-lg font-medium transition duration-150">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586l1.293-1.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v7a1 1 0 11-2 0V3a1 1 0 011-1z" clip-rule="evenodd"/></svg>
           PDF 저장
         </button>
@@ -146,14 +670,14 @@
 
       <div id="top3" class="mt-4"></div>
       <div class="mt-10">
-        <h4 class="text-xl font-bold mb-4 text-slate-800">세부 은사 점수</h4>
+        <h4 class="text-xl font-bold mb-4 text-white">세부 은사 점수</h4>
         <div id="score-table" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           </div>
       </div>
 
 
       <div class="mt-6 flex justify-center gap-3">
-        <button id="btn-retry" type="button" class="px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-medium hover:bg-slate-50/60 transition duration-150">
+        <button id="btn-retry" type="button" class="px-5 py-3 rounded-xl font-medium transition duration-150">
           다시 검사
         </button>
       </div>
@@ -254,9 +778,9 @@ const MAP = {
   C: [2, 9, 13, 18, 28, 47, 50, 52, 58],    // 9문항 (52 = 돌봄 '회피' 역문항)
   S: [4, 7, 10, 11, 14, 33, 37, 45],       // 8문항 (11 = 재능을 이웃/공동체에 쓰려는 의지 → 섬김)
   W: [5, 22, 35, 41],                  // 4문항 (예배/찬양·예배적 표현 중심)
-  T: [19, 20, 26, 29, 32, 40, 42, 49, 55, 57], // 10문항 (55 = 가르침/학습 회피 역문항)
+  T: [19, 20, 26, 29, 32, 40, 42, 49, 57], // 9문항
   M: [15, 21, 46, 48, 56, 59, 60],       // 7문항 (56 = 공동체보다 개인… → 미션/공동체 역문항)
-  P: [6, 23, 24, 43, 44, 53],             // 6문항 (53 = 기도 회피 역문항)
+  P: [6, 23, 24, 43, 44, 53, 55],         // 7문항 (53·55 = 기도/학습 회피 역문항)
   R: [3, 12, 16, 27, 34, 36, 38, 54]      // 8문항 (54 = 변화 거부 역문항, 38 = 변화/혁신 지향)
 };
 
@@ -320,26 +844,2145 @@ const COMBO = {
   "S+T+W": {title:"예배 교육 섬김자", desc:"가르침(<span class='combo-key-highlight'>T</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 섬김/봉사(<span class='combo-key-highlight'>S</span>)를 실천합니다.", examples:["예배를 통한 교육 섬김","교육적 예배 봉사","섬김과 교육의 예배적 통합","예배적 교육 섬김","교육 예배 봉사자"]}
 };
 
+
+const PERSONAS = {
+  "C+L+M": { person:`바나바`, verse:`행 11:23–24`, summary:`새신자를 돌보고 공동체를 세운 격려의 리더`, image:`assets/personas/clm.webp` },
+  "C+L+P": { person:`사무엘`, verse:`삼상 7:5`, summary:`백성을 위해 기도하는 중보 지도자`, image:`assets/personas/clp.webp` },
+  "C+L+R": { person:`느헤미야`, verse:`느 2:17–18`, summary:`공동체 재건의 창의적 리더`, image:`assets/personas/clr.webp` },
+  "C+L+S": { person:`도르가`, verse:`행 9:36`, summary:`선행과 구제로 섬김의 본`, image:`assets/personas/cls.webp` },
+  "C+L+T": { person:`디모데`, verse:`딤후 2:2`, summary:`제자양육과 교육 중심 사역`, image:`assets/personas/clt.webp` },
+  "C+L+W": { person:`에스라`, verse:`스 7:10`, summary:`예배 회복, 율법 교육`, image:`assets/personas/clw.webp` },
+  "C+M+P": { person:`안나`, verse:`눅 2:37`, summary:`기도·금식·증언의 모델`, image:`assets/personas/cmp.webp` },
+  "C+M+R": { person:`사마리아 여인`, verse:`요 4:28–30`, summary:`관계 중심 전도의 상징`, image:`assets/personas/cmr.webp` },
+  "C+M+S": { person:`선한 사마리아인`, verse:`눅 10:33–35`, summary:`실천적 사랑의 전도자`, image:`assets/personas/cms.webp` },
+  "C+M+T": { person:`브리스길라`, verse:`행 18:26`, summary:`가르침과 복음 설명`, image:`assets/personas/cmt.webp` },
+  "C+M+W": { person:`한나`, verse:`삼상 1:27-28`, summary:`예배와 헌신의 모델`, image:`assets/personas/cmw.webp` },
+  "C+P+R": { person:`하박국`, verse:`합 2:1–2`, summary:`기도·계시 기록`, image:`assets/personas/cpr.webp` },
+  "C+P+S": { person:`욥`, verse:`욥 42:10`, summary:`고난 가운데 중보`, image:`assets/personas/cps.webp` },
+  "C+P+T": { person:`엘리야`, verse:`왕상 18:36–39`, summary:`기도·선포·가르침의 선지자`, image:`assets/personas/cpt.webp` },
+  "C+P+W": { person:`시므온`, verse:`눅 2:25–32`, summary:`예배·찬송·기다림`, image:`assets/personas/cpw.webp` },
+  "C+R+S": { person:`룻`, verse:`룻 1:16–17`, summary:`헌신과 지혜로운 선택`, image:`assets/personas/crs.webp` },
+  "C+R+T": { person:`솔로몬`, verse:`왕상 4:29–34`, summary:`지혜와 가르침`, image:`assets/personas/crt.webp` },
+  "C+R+W": { person:`미리암`, verse:`출 15:20–21`, summary:`찬양과 예배 인도`, image:`assets/personas/crw.webp` },
+  "C+S+T": { person:`이드로`, verse:`출 18:17–24`, summary:`지도자 멘토, 실천적 조언`, image:`assets/personas/cst.webp` },
+  "C+S+W": { person:`마르다`, verse:`눅 10:40–41`, summary:`환대와 섬김`, image:`assets/personas/csw.webp` },
+  "C+T+W": { person:`힐기야`, verse:`왕하 22:8–13`, summary:`말씀 회복, 예배 개혁`, image:`assets/personas/ctw.webp` },
+  "L+M+P": { person:`바울`, verse:`행 13:2–3`, summary:`선교·기도·개척 리더`, image:`assets/personas/lmp.webp` },
+  "L+M+R": { person:`요나`, verse:`욘 3:1–5`, summary:`창의적 메시지·회개 촉구`, image:`assets/personas/lmr.webp` },
+  "L+M+S": { person:`사도 요한`, verse:`요일 4:7–12`, summary:`사랑·섬김·전도 균형`, image:`assets/personas/lms.webp` },
+  "L+M+T": { person:`스데반`, verse:`행 7장`, summary:`말씀 변증·전도`, image:`assets/personas/lmt.webp` },
+  "L+M+W": { person:`야고보`, verse:`행 15:13–21`, summary:`예루살렘 교회 예배 리더`, image:`assets/personas/lmw.webp` },
+  "L+P+R": { person:`다니엘`, verse:`단 6:10`, summary:`기도·지혜·리더십`, image:`assets/personas/lpr.webp` },
+  "L+P+S": { person:`요셉`, verse:`창 41:39–41`, summary:`섬김·행정·지혜`, image:`assets/personas/lps.webp` },
+  "L+P+T": { person:`모세`, verse:`신 6:1–7`, summary:`지도자·교사`, image:`assets/personas/lpt.webp` },
+  "L+P+W": { person:`히스기야`, verse:`대하 29:1–5`, summary:`예배 개혁자`, image:`assets/personas/lpw.webp` },
+  "L+R+S": { person:`여호수아`, verse:`수 1:6–9`, summary:`전략·순종 리더`, image:`assets/personas/lrs.webp` },
+  "L+R+T": { person:`엘리사`, verse:`왕하 2–6`, summary:`기적·교육`, image:`assets/personas/lrt.webp` },
+  "L+R+W": { person:`다윗 왕`, verse:`대하 25:1`, summary:`예배 조직자`, image:`assets/personas/lrw.webp` },
+  "L+S+T": { person:`에녹`, verse:`창 5:24`, summary:`본보기 삶, 동행`, image:`assets/personas/lst.webp` },
+  "L+S+W": { person:`요아스`, verse:`대하 24:4–14`, summary:`성전 보수 리더`, image:`assets/personas/lsw.webp` },
+  "L+T+W": { person:`여호야다`, verse:`대하 23:18`, summary:`예배 질서 회복·리더`, image:`assets/personas/ltw.webp` },
+  "M+P+R": { person:`실라`, verse:`행 16:25`, summary:`찬양·기도 전도`, image:`assets/personas/mpr.webp` },
+  "M+P+S": { person:`두 렙돈 과부`, verse:`막 12:41–44`, summary:`헌신·섬김`, image:`assets/personas/mps.webp` },
+  "M+P+T": { person:`디도`, verse:`딛 1:4–5`, summary:`교회 조직·가르침`, image:`assets/personas/mpt.webp` },
+  "M+P+W": { person:`나아만의 소녀`, verse:`왕하 5:2–4`, summary:`믿음의 증언`, image:`assets/personas/mpw.webp` },
+  "M+R+S": { person:`드보라`, verse:`삿 4–5`, summary:`지혜·예술·리더십`, image:`assets/personas/mrs.webp` },
+  "M+R+T": { person:`아볼로`, verse:`행 18:24`, summary:`웅변·가르침`, image:`assets/personas/mrt.webp` },
+  "M+R+W": { person:`아삽`, verse:`시편 표제`, summary:`찬양·음악`, image:`assets/personas/mrw.webp` },
+  "M+S+T": { person:`아굴라`, verse:`행 18:26`, summary:`섬김·복음 가르침`, image:`assets/personas/mst.webp` },
+  "M+S+W": { person:`고넬료`, verse:`행 10장`, summary:`전도와 섬김과 예배`, image:`assets/personas/msw.webp` },
+  "M+T+W": { person:`아나니아`, verse:`행 9:10–17`, summary:`가르침·인도·치유`, image:`assets/personas/mtw.webp` },
+  "S+T+W": { person:`말라기`, verse:`말 1–4`, summary:`회개 촉구`, image:`assets/personas/stw.webp` },
+  "P+R+S": { person:`브살렐`, verse:`출 35:30–35`, summary:`창의적 제작, 성막 섬김`, image:`assets/personas/prs.webp` },
+  "P+R+T": { person:`예레미야`, verse:`렘 1장`, summary:`경고와 상징적 가르침`, image:`assets/personas/prt.webp` },
+  "P+R+W": { person:`고라 자손`, verse:`대상 25장`, summary:`찬양대`, image:`assets/personas/prw.webp` },
+  "P+S+T": { person:`에스더`, verse:`에 4:16`, summary:`중보·지혜`, image:`assets/personas/pst.webp` },
+  "P+S+W": { person:`사가랴`, verse:`눅 1:8–13`, summary:`제사장·예배 섬김`, image:`assets/personas/psw.webp` },
+  "P+T+W": { person:`세례 요한`, verse:`마 3장`, summary:`회개 설교·예배 준비`, image:`assets/personas/ptw.webp` },
+  "R+S+T": { person:`오홀리압`, verse:`출 36:1–2`, summary:`기술·교육·섬김`, image:`assets/personas/rst.webp` },
+  "R+S+W": { person:`헤만(Heman)`, verse:`대상 25:1–6`, summary:`찬양대 지휘자·음악 창작자`, image:`assets/personas/rsw.webp` },
+  "R+T+W": { person:`이사`, verse:``, summary:`이사야서`, image:`assets/personas/rtw.webp` },
+};
+
+/* ===== 56유형 확장 데이터 (build 스크립트가 자동 주입) ===== */
+const EXTENDED = /* __EXTENDED_BEGIN__ */ {
+  "C+L+M": {
+    "title": "새신자 정착 개척자",
+    "area": "돌봄 · 리더십 · 전도",
+    "summary": [
+      "새신자와 지역사회를 연결하며 복음을 전하는 돌봄형 리더.",
+      "교회 개척과 공동체 형성에 헌신하는 개척 정신의 사역자.",
+      "사람들의 신앙 여정을 함께 걷는 목양적 전도자."
+    ],
+    "calling": "새신자와 지역을 잇는 공동체 개척 리더.",
+    "verseRef": "마태복음 28:19",
+    "verseText": "그러므로 너희는 가서 모든 민족을 제자로 삼아…",
+    "jobs": [
+      "사회복지기관장(기독교 재단)",
+      "기독 NGO 코디네이터/지부장",
+      "병원 원목실/사회사업팀 리더",
+      "선교단체 행정 디렉터",
+      "직장사역(BAM) 기업 리더",
+      "위기 개척교회 컨설턴트",
+      "기독교 멘탈 헬스 기업 CEO",
+      "평생교육원 설립자",
+      "재소자 복음화 프로그램 총괄",
+      "교단 새신자 정착 시스템 개발자"
+    ],
+    "ministry": [
+      "새신자 양육 그룹장",
+      "전도팀 리더",
+      "국내외 아웃리치 인솔",
+      "개척교회 컨설팅",
+      "관계 전도 훈련 리더"
+    ],
+    "role": "새신자를 돌보고 공동체를 세워가는 복음적 개척자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#공동체세움",
+      "#복음실천가"
+    ]
+  },
+  "C+L+P": {
+    "title": "영적 돌봄 리더",
+    "area": "돌봄 · 리더십 · 기도",
+    "summary": [
+      "기도와 돌봄을 통해 공동체의 영적 건강을 세우는 리더.",
+      "상처받은 이들을 품고, 중보와 상담으로 회복을 돕는다.",
+      "하나님의 마음으로 교회를 돌보는 영적 감독자."
+    ],
+    "calling": "기도로 공동체를 세우는 돌봄형 리더.",
+    "verseRef": "빌립보서 4:6",
+    "verseText": "아무것도 염려하지 말고… 모든 일에 기도와 간구로…",
+    "jobs": [
+      "기독교 심리상담 센터장",
+      "영성훈련원 운영자",
+      "대안학교 교장",
+      "목회 코치",
+      "중보기도 사역 단체 리더",
+      "영성 교수",
+      "큐티모임 지도자",
+      "인재양성 재단 이사",
+      "기독 부흥운동 기획자",
+      "교회 내 영성관리 디렉터"
+    ],
+    "ministry": [
+      "중보기도팀 리더",
+      "심방/소그룹 리더",
+      "영적 돌봄 성도 관리",
+      "묵상모임 운영",
+      "철야기도회 기획"
+    ],
+    "role": "기도로 공동체를 세우며 하나님의 위로를 전달하는 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#기도리더",
+      "#영성멘토"
+    ]
+  },
+  "C+L+R": {
+    "title": "공동체 혁신 코치",
+    "area": "돌봄 · 리더십 · 창의",
+    "summary": [
+      "교회의 새로운 시스템과 문화적 접근을 디자인하는 리더.",
+      "전통과 혁신을 아우르며 다음세대 사역에 창의적 대안을 제시.",
+      "비전과 실행력을 겸비한 영적 혁신가."
+    ],
+    "calling": "새로운 교회 모델을 설계하는 공동체 혁신 리더.",
+    "verseRef": "출애굽기 35:31",
+    "verseText": "그를 하나님의 영으로 지혜와 총명과 지식과 여러 가지 재주로 채우시고.",
+    "jobs": [
+      "기독 스타트업 CEO",
+      "교회 컨설팅 전문가",
+      "미래교회 연구소장",
+      "교육 콘텐츠 기획자",
+      "기독 벤처 투자 큐레이터",
+      "비전 전략가",
+      "창의 교회공간 디렉터",
+      "커뮤니티 플랫폼 창시자",
+      "교육모델 혁신가",
+      "크리스천 싱크탱크 운영자"
+    ],
+    "ministry": [
+      "교회 비전 수립",
+      "소그룹 혁신",
+      "대안학교 설립 준비",
+      "갈등 조정 코치",
+      "청년부 비전 리더"
+    ],
+    "role": "창의와 돌봄으로 교회를 새롭게 세우는 비전 디자이너.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#혁신리더",
+      "#교회디자이너"
+    ]
+  },
+  "C+L+S": {
+    "title": "실천적 돌봄 리더",
+    "area": "돌봄 · 리더십 · 섬김",
+    "summary": [
+      "사랑으로 공동체를 돌보고 봉사팀을 이끄는 섬김형 리더.",
+      "현장의 필요를 살피고 실질적 도움을 실천한다.",
+      "섬김의 문화를 세워 교회를 따뜻하게 만드는 리더."
+    ],
+    "calling": "사랑으로 섬기며 사람을 세우는 실천 리더.",
+    "verseRef": "마가복음 10:45",
+    "verseText": "섬김을 받으려 함이 아니라 섬기려 함이라.",
+    "jobs": [
+      "복지재단 관리자",
+      "교회사무 총괄자",
+      "자원봉사 센터장",
+      "구제활동 코디네이터",
+      "재난구호 전문가",
+      "시설관리 리더",
+      "선교재정 감사",
+      "차량관리 리더",
+      "지역복지 프로그램 디렉터",
+      "봉사조직 운영자"
+    ],
+    "ministry": [
+      "행정총괄",
+      "봉사자 훈련",
+      "차량/식사봉사 조직",
+      "구제사역 리더",
+      "새가족 정착 도우미"
+    ],
+    "role": "섬김으로 공동체의 기반을 다지는 실천형 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#섬김리더",
+      "#실천사역자"
+    ]
+  },
+  "C+L+T": {
+    "title": "양육 전문가 리더",
+    "area": "돌봄 · 리더십 · 가르침",
+    "summary": [
+      "사람의 성장을 돕고 제자를 세우는 돌봄형 교육 리더.",
+      "말씀과 사랑으로 공동체를 훈련시키며 신앙의 기반을 다진다.",
+      "배움이 삶으로 이어지게 하는 체계적 양육 전문가."
+    ],
+    "calling": "사람을 가르치고 세우는 영적 트레이너.",
+    "verseRef": "디모데후서 2:2",
+    "verseText": "충성된 사람들에게 가르쳐 다른 사람들도 가르치게 하라.",
+    "jobs": [
+      "기독교 교육기관 원장/팀장",
+      "멘토링 프로그램 디렉터",
+      "제자훈련 교재 저자/강사",
+      "신학교 교직원(학생처)",
+      "청소년 진로 코치",
+      "교회 교육부서 총괄",
+      "세계관 교육 리더",
+      "성경 통독 아카데미 운영자",
+      "리더십 개발 신학 멘토",
+      "다문화 가정 교육 리더"
+    ],
+    "ministry": [
+      "제자훈련 리더",
+      "교육부서 총괄",
+      "교사훈련 운영",
+      "진로코칭 사역",
+      "통독 프로그램 관리"
+    ],
+    "role": "말씀으로 사람을 세우고, 배움을 삶으로 연결하는 양육 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#양육리더",
+      "#제자훈련코치"
+    ]
+  },
+  "C+L+W": {
+    "title": "예배 공동체 디렉터",
+    "area": "돌봄 · 리더십 · 예배",
+    "summary": [
+      "예배와 공동체의 조화를 이루는 따뜻한 리더.",
+      "예배를 기획하고 예배자들의 영성을 세우는 코디네이터.",
+      "사람을 돌보며 예배를 조직하는 균형 잡힌 리더."
+    ],
+    "calling": "예배를 통해 공동체를 세우는 섬김형 리더.",
+    "verseRef": "요한복음 4:24",
+    "verseText": "하나님은 영이시니 예배하는 자가 영과 진리로 예배할지니라.",
+    "jobs": [
+      "워십 컨설팅 대표",
+      "교회 예배 기획팀장",
+      "CCM 기획사 대표",
+      "문화예술 학교장",
+      "예배공간 음향 전문가",
+      "예배자 훈련 디렉터",
+      "절기 예배 기획자",
+      "예술인 공동체 운영자",
+      "예배 회복 운동 리더",
+      "문화사역 감독"
+    ],
+    "ministry": [
+      "예배기획 리더",
+      "예배팀 관리",
+      "문화예배 구성",
+      "예배자 양육",
+      "절기 예배 준비"
+    ],
+    "role": "예배와 공동체를 연결해 하나님 나라를 세우는 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예배디렉터",
+      "#공동체리더"
+    ]
+  },
+  "C+M+P": {
+    "title": "중보적 복음 전달자",
+    "area": "돌봄 · 전도 · 기도",
+    "summary": [
+      "기도로 복음을 전하며 상처받은 이들을 품는 치유형 전도자.",
+      "기도와 사랑으로 영혼을 돌보고 복음의 씨앗을 심는다.",
+      "눈물의 중보를 통해 복음의 길을 여는 돌봄형 선교자."
+    ],
+    "calling": "기도로 복음을 전하고 사랑으로 영혼을 품는 중보자.",
+    "verseRef": "야고보서 5:16",
+    "verseText": "의인의 간구는 역사하는 힘이 크다.",
+    "jobs": [
+      "기독교 전문 상담사(전도/영성)",
+      "호스피스 사역자",
+      "선교사 케어 전문가",
+      "의료/법률 선교사",
+      "치유 기도 사역자",
+      "중보기도 동원가",
+      "병원·양로원 전도사역자",
+      "전도 릴레이 기도팀 조직가",
+      "복음과 치유 연계 사역자",
+      "선교지 영적 멘토"
+    ],
+    "ministry": [
+      "기도전도팀 운영",
+      "병원·양로원 전도",
+      "중보기도 모임",
+      "선교사 케어",
+      "치유기도 사역"
+    ],
+    "role": "기도와 사랑으로 복음을 전하며 영혼을 품는 중보 전도자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#기도전도자",
+      "#중보사역자"
+    ]
+  },
+  "C+M+R": {
+    "title": "창의적 관계 전도자",
+    "area": "돌봄 · 전도 · 창의",
+    "summary": [
+      "문화와 예술을 통해 복음을 전하는 창의형 선교자.",
+      "관계와 감성을 통해 세상 속에 자연스럽게 복음을 전한다.",
+      "새로운 도구와 아이디어로 복음을 스토리로 전달하는 창작자."
+    ],
+    "calling": "관계와 예술로 복음을 전하는 창의적 선교자.",
+    "verseRef": "마태복음 5:14",
+    "verseText": "너희는 세상의 빛이라.",
+    "jobs": [
+      "기독 미디어 콘텐츠 크리에이터",
+      "디지털 선교 플랫폼 기획자",
+      "복음 웹툰/영상 작가",
+      "문화선교 단체 설립자",
+      "SNS 복음 멘토",
+      "문화 전도 이벤트 기획자",
+      "브랜드 컨설턴트(기독 콘텐츠)",
+      "복음 스토리텔링 전문가",
+      "청년 대상 위로 콘텐츠 제작자",
+      "문화예술 복음 사역자"
+    ],
+    "ministry": [
+      "SNS 복음 콘텐츠 운영",
+      "문화예배 사역",
+      "창의 전도팀 기획",
+      "청년문화 사역",
+      "영상/웹툰 선교 활동"
+    ],
+    "role": "예술과 관계로 복음을 전하는 문화 전도자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#문화전도자",
+      "#복음크리에이터"
+    ]
+  },
+  "C+M+S": {
+    "title": "지역사회 봉사 전도자",
+    "area": "돌봄 · 전도 · 섬김",
+    "summary": [
+      "사랑의 손길로 복음을 전하는 섬김형 전도자.",
+      "도시락·물품 나눔 등 실질적 봉사로 복음의 문을 연다.",
+      "삶 속에서 사랑을 실천하며 예수님의 마음을 전한다."
+    ],
+    "calling": "섬김으로 복음을 전하는 사랑의 실천가.",
+    "verseRef": "마가복음 10:45",
+    "verseText": "인자가 온 것은 섬김을 받으려 함이 아니라 도리어 섬기려 함이라.",
+    "jobs": [
+      "구호단체 실무자",
+      "지역복지사(기독 기관)",
+      "해외 봉사단 리더",
+      "무료급식소 운영자",
+      "선교 물품 제작자",
+      "도시락 봉사 코디네이터",
+      "미자립교회 지원 담당자",
+      "거리전도 봉사자",
+      "재활지원 코치",
+      "직업재활 선교사"
+    ],
+    "ministry": [
+      "구제사역 리더",
+      "도시락 나눔 봉사",
+      "지역교회 지원",
+      "노숙인 전도",
+      "선교 후원 봉사"
+    ],
+    "role": "사랑과 섬김으로 복음을 전하는 실천형 전도자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#섬김전도자",
+      "#사랑실천가"
+    ]
+  },
+  "C+M+T": {
+    "title": "복음주의 멘토",
+    "area": "돌봄 · 전도 · 가르침",
+    "summary": [
+      "복음 중심의 가르침으로 사람을 세우는 신앙 멘토.",
+      "성경적 세계관을 가르쳐 믿음의 뿌리를 세운다.",
+      "삶과 말씀을 잇는 제자훈련가."
+    ],
+    "calling": "말씀으로 세상을 가르치는 복음의 교사.",
+    "verseRef": "디모데후서 2:2",
+    "verseText": "충성된 사람들에게 가르쳐 다른 사람들도 가르치게 하라.",
+    "jobs": [
+      "알파코스 리더/강사",
+      "일대일 양육 코치",
+      "복음주의 변증 강사",
+      "신앙 서적 저자",
+      "이단대처 교육 전문가",
+      "진로·입시 상담가",
+      "선교지 리더 양성가",
+      "청년 복음 코치",
+      "복음훈련 교재 저자",
+      "복음 교육 기획자"
+    ],
+    "ministry": [
+      "알파코스 운영",
+      "제자양육",
+      "복음변증 세미나",
+      "청년 복음훈련",
+      "가정복음학교 진행"
+    ],
+    "role": "복음의 진리를 가르치며 사람을 세우는 멘토형 교사.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#복음멘토",
+      "#제자훈련가"
+    ]
+  },
+  "C+M+W": {
+    "title": "문화적 위로 사역자",
+    "area": "돌봄 · 전도 · 예배",
+    "summary": [
+      "문화와 예배를 결합해 사람들에게 복음의 위로를 전한다.",
+      "예술과 찬양을 통해 지친 영혼에 쉼과 소망을 준다.",
+      "복음의 감성을 예배로 풀어내는 따뜻한 사역자."
+    ],
+    "calling": "문화로 복음을 전하고 예배로 위로를 전하는 사역자.",
+    "verseRef": "고린도후서 1:4",
+    "verseText": "하나님은 모든 환난 중에서 우리를 위로하시는 이시니.",
+    "jobs": [
+      "문화공간 운영자",
+      "찬양전도 리더",
+      "문화예배 기획자",
+      "공연예술 사역자",
+      "CCM 작곡가/싱어송라이터",
+      "음악치료사",
+      "예배상담 코치",
+      "영상/미디어 PD",
+      "위로예배 디렉터",
+      "문화사역 감독"
+    ],
+    "ministry": [
+      "문화예배 운영",
+      "찬양축제 기획",
+      "초신자 환영예배",
+      "위로예배 사역",
+      "문화공연 사역"
+    ],
+    "role": "문화와 예배로 세상을 위로하는 복음적 예술가.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#문화예배자",
+      "#위로사역자"
+    ]
+  },
+  "C+P+R": {
+    "title": "영적 성장 콘텐츠 개발자",
+    "area": "돌봄 · 기도 · 창의",
+    "summary": [
+      "기도와 예술적 감성을 결합해 영성 성장을 돕는 콘텐츠를 만든다.",
+      "묵상, 필사, 기도노트 등을 통해 말씀을 시각화한다.",
+      "하나님과의 친밀한 교제를 창의적으로 표현하는 영성 창작자."
+    ],
+    "calling": "기도와 예술로 영성의 길을 디자인하는 사람.",
+    "verseRef": "시편 16:8",
+    "verseText": "내가 여호와를 항상 내 앞에 모시며 그가 내 오른쪽에 계시므로 내가 흔들리지 아니하리로다.",
+    "jobs": [
+      "영성 리트릿 기획자",
+      "묵상 앱 개발자",
+      "기독 미술치료사",
+      "필사노트 작가",
+      "영성코칭 콘텐츠 제작자",
+      "기도회 커리큘럼 설계자",
+      "묵상 자료 디자이너",
+      "개인 영성 코치",
+      "시각자료 크리에이터",
+      "교회 내 기도공간 혁신가"
+    ],
+    "ministry": [
+      "기도노트 제작",
+      "묵상모임 인도",
+      "영성캠프 기획",
+      "개인코칭",
+      "창의기도회 운영"
+    ],
+    "role": "창의적 표현으로 하나님의 임재를 경험하게 하는 영성 디자이너.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#영성콘텐츠",
+      "#묵상디자이너"
+    ]
+  },
+  "C+P+S": {
+    "title": "고난받는 자의 중보자",
+    "area": "돌봄 · 기도 · 섬김",
+    "summary": [
+      "고통 중에 있는 사람들을 위해 기도하며 돕는 치유형 중보자.",
+      "기도와 봉사로 하나님의 사랑을 전한다.",
+      "고난받는 이웃에게 실제적 위로를 주는 돌봄의 손."
+    ],
+    "calling": "기도로 섬기며 사랑을 실천하는 따뜻한 중보자.",
+    "verseRef": "갈라디아서 6:2",
+    "verseText": "너희가 짐을 서로 지라.",
+    "jobs": [
+      "환자 방문 사역자",
+      "기도원 관리자",
+      "NGO 자비사역자",
+      "장애인 봉사 코디네이터",
+      "사모/목회자 가족 지원가",
+      "교회 심방팀 리더",
+      "재난 구호 중보자",
+      "의료 상담사",
+      "교정사역 봉사자",
+      "구제기금 관리자"
+    ],
+    "ministry": [
+      "심방사역",
+      "중보기도팀 운영",
+      "병원방문 사역",
+      "재난구호 지원",
+      "기도봉사팀"
+    ],
+    "role": "기도와 섬김으로 고통받는 이들을 돌보는 사랑의 중보자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#기도봉사자",
+      "#중보사역자"
+    ]
+  },
+  "C+P+T": {
+    "title": "영성 교육 코치",
+    "area": "돌봄 · 기도 · 가르침",
+    "summary": [
+      "기도와 말씀을 통해 성도의 신앙을 성장시키는 교육자.",
+      "말씀훈련과 제자양육으로 신앙의 기초를 세운다.",
+      "삶과 배움을 잇는 영성 코치."
+    ],
+    "calling": "기도로 가르치고 말씀으로 변화시키는 코치.",
+    "verseRef": "요한복음 8:31",
+    "verseText": "너희가 내 말에 거하면 참 내 제자가 되리라.",
+    "jobs": [
+      "소그룹 성경 리더",
+      "큐티모임 인도자",
+      "제자훈련 강사",
+      "영성 교육자",
+      "교리교육 강사",
+      "기도훈련 강사",
+      "성경적 부모교육가",
+      "제자훈련 교재 저자",
+      "신앙아카데미 강사",
+      "윤리교육 멘토"
+    ],
+    "ministry": [
+      "제자훈련",
+      "성경공부 리더",
+      "영성세미나",
+      "기도훈련",
+      "부모교육 진행"
+    ],
+    "role": "기도와 말씀으로 신앙을 성장시키는 교육자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#영성코치",
+      "#신앙멘토"
+    ]
+  },
+  "C+P+W": {
+    "title": "치유와 위로의 예배자",
+    "area": "돌봄 · 기도 · 예배",
+    "summary": [
+      "기도와 예배를 통해 마음의 상처를 치유하는 예배자.",
+      "찬양과 기도로 하나님의 위로를 전한다.",
+      "예배의 자리를 회복의 장소로 바꾸는 예배 사역자."
+    ],
+    "calling": "기도와 찬양으로 사람의 마음을 치유하는 예배자.",
+    "verseRef": "마태복음 11:28",
+    "verseText": "수고하고 무거운 짐 진 자들아 다 내게로 오라.",
+    "jobs": [
+      "치유기도회 리더",
+      "영성회복 집회기획자",
+      "예배 중 중보기도자",
+      "찬양기도 사역자",
+      "쉼터 운영자",
+      "예배상담 코치",
+      "CCM 싱어송라이터",
+      "내적치유 워십리더",
+      "음악치료사",
+      "기도사역 디렉터"
+    ],
+    "ministry": [
+      "치유기도회 운영",
+      "예배중보기도",
+      "찬양회복사역",
+      "쉼터운영",
+      "영성회복집회"
+    ],
+    "role": "예배와 기도로 상처를 치유하는 영적 위로자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#치유예배자",
+      "#회복사역자"
+    ]
+  },
+  "C+R+S": {
+    "title": "필요 중심의 섬김 혁신가",
+    "area": "돌봄 · 창의 · 섬김",
+    "summary": [
+      "교회의 실제적 필요를 창의적으로 해결하는 실천가.",
+      "작은 섬김 속에서 공동체를 따뜻하게 변화시킨다.",
+      "아이디어와 헌신으로 봉사를 새롭게 디자인하는 혁신가."
+    ],
+    "calling": "섬김을 디자인하여 교회를 새롭게 만드는 사람.",
+    "verseRef": "마태복음 25:40",
+    "verseText": "지극히 작은 자 하나에게 한 것이 곧 내게 한 것이니라.",
+    "jobs": [
+      "봉사 아이디어 기획자",
+      "교회행사 디자인 리더",
+      "환경개선 프로젝트 매니저",
+      "지역나눔 캠페인 운영자",
+      "친환경 교회 공간 디자이너",
+      "기독 DIY 제작자",
+      "봉사시스템 개발자",
+      "커뮤니티 디자인 코디네이터",
+      "교회 쉼터 운영자",
+      "섬김 콘텐츠 개발자"
+    ],
+    "ministry": [
+      "환경미화 봉사",
+      "행사 기획 지원",
+      "나눔 캠페인 운영",
+      "봉사 시스템 기획",
+      "섬김 교육"
+    ],
+    "role": "창의적 섬김으로 공동체의 문화를 바꾸는 혁신가.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#섬김디자이너",
+      "#혁신사역자"
+    ]
+  },
+  "C+R+T": {
+    "title": "공감형 교육 콘텐츠 전문가",
+    "area": "돌봄 · 창의 · 가르침",
+    "summary": [
+      "배움의 즐거움을 통해 신앙을 가르치는 창의 교육자.",
+      "다양한 감각과 매체로 복음을 쉽게 전달한다.",
+      "다음세대에게 신앙을 흥미롭게 전하는 크리에이터."
+    ],
+    "calling": "즐겁게 배우고 함께 성장하는 신앙 교육자.",
+    "verseRef": "잠언 22:6",
+    "verseText": "마땅히 행할 길을 아이에게 가르치라.",
+    "jobs": [
+      "교리교육 콘텐츠 제작자",
+      "공과 학습 개발자",
+      "인문학 강사",
+      "기독교 출판 작가",
+      "교육용 게임 개발자",
+      "미디어 교육 디자이너",
+      "교육코칭 전문가",
+      "교육 교구 제작자",
+      "신앙그림 작가",
+      "멘토링 커리큘럼 설계자"
+    ],
+    "ministry": [
+      "공과 지도",
+      "교육 콘텐츠 개발",
+      "청소년 멘토링",
+      "시청각 자료 제작",
+      "교사 교육"
+    ],
+    "role": "창의와 교육을 결합해 배움의 기쁨을 전하는 신앙 교육자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#교육디자이너",
+      "#창의사역자"
+    ]
+  },
+  "C+R+W": {
+    "title": "미디어 아트 예배자",
+    "area": "돌봄 · 창의 · 예배",
+    "summary": [
+      "예술과 기술을 활용해 예배에 감동을 더하는 아티스트.",
+      "시각·음향·영상으로 하나님의 아름다움을 표현한다.",
+      "예배의 감동을 예술로 번역하는 창의 예배자."
+    ],
+    "calling": "예술로 하나님을 예배하고 세상을 감동시키는 예배자.",
+    "verseRef": "시편 96:9",
+    "verseText": "거룩한 옷을 입고 여호와께 예배하라.",
+    "jobs": [
+      "영상 연출가",
+      "조명 디자이너",
+      "예배 무대 기획자",
+      "예배 공간 설계자",
+      "CCM 뮤직비디오 감독",
+      "워십 공연 예술가",
+      "예배 미디어 감독",
+      "예술 예배 연출가",
+      "시각 디자인 컨설턴트",
+      "문화예배 크리에이터"
+    ],
+    "ministry": [
+      "영상·조명 연출",
+      "절기예배 디자인",
+      "문화예배 연출",
+      "청년예배 예술팀",
+      "미디어팀 리더"
+    ],
+    "role": "예배의 메시지를 예술로 표현하는 미디어 워십 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예술예배자",
+      "#워십아티스트"
+    ]
+  },
+  "C+S+T": {
+    "title": "실무 멘토링 코치",
+    "area": "돌봄 · 섬김 · 가르침",
+    "summary": [
+      "현장에서 모범을 보이며 봉사자와 교사를 훈련하는 멘토.",
+      "사역의 실제를 가르치며 섬김의 가치를 전한다.",
+      "배움과 봉사를 잇는 실천형 교육자."
+    ],
+    "calling": "섬김을 가르치고 함께 성장하는 현장 멘토.",
+    "verseRef": "디모데후서 2:2",
+    "verseText": "충성된 사람들에게 가르쳐 다른 사람들도 가르치게 하라.",
+    "jobs": [
+      "교사훈련 강사",
+      "봉사자 코치",
+      "실무교육 기획자",
+      "사회복지 실습 지도자",
+      "교회 행정 교육자",
+      "직업훈련 멘토",
+      "청소년 멘토링 리더",
+      "기술 교육자",
+      "실무행정 컨설턴트",
+      "자원봉사 코디네이터"
+    ],
+    "ministry": [
+      "교사훈련",
+      "봉사자 교육",
+      "사역 훈련",
+      "청소년 멘토링",
+      "행정교육 지원"
+    ],
+    "role": "섬김과 배움을 연결하는 실천형 교육 멘토.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#섬김멘토",
+      "#실무교사"
+    ]
+  },
+  "C+S+W": {
+    "title": "환대와 봉사의 예배 환경 조성자",
+    "area": "돌봄 · 섬김 · 예배",
+    "summary": [
+      "예배 전후에 성도들을 따뜻하게 맞이하고 섬기는 사람.",
+      "사랑과 환대로 예배 공동체를 세운다.",
+      "섬김의 손길로 예배의 분위기를 살리는 예배자."
+    ],
+    "calling": "사랑으로 예배 공동체를 맞이하는 환대의 손길.",
+    "verseRef": "히브리서 13:2",
+    "verseText": "손님 대접하기를 잊지 말라.",
+    "jobs": [
+      "안내위원 리더",
+      "주방 봉사 리더",
+      "환대팀 디렉터",
+      "예배 지원 담당자",
+      "친교 담당 리더",
+      "예배 보조 관리자",
+      "환대 코디네이터",
+      "카페 사역자",
+      "성찬식 준비자",
+      "새가족 환영 리더"
+    ],
+    "ministry": [
+      "안내 및 환대",
+      "친교 식사 봉사",
+      "예배 환경 관리",
+      "성찬식 준비",
+      "새가족 정착 사역"
+    ],
+    "role": "사랑과 섬김으로 예배의 문을 여는 환대의 예배자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#환대사역자",
+      "#예배섬김자"
+    ]
+  },
+  "C+T+W": {
+    "title": "예배 교육 멘토",
+    "area": "돌봄 · 가르침 · 예배",
+    "summary": [
+      "예배의 의미와 본질을 가르치며 예배자를 세우는 교육자.",
+      "말씀과 예배의 조화를 가르쳐 영적 성숙을 돕는다.",
+      "삶 속에서 예배의 자세를 훈련하는 예배 교사."
+    ],
+    "calling": "예배를 배우고 가르치는 신앙의 멘토.",
+    "verseRef": "요한복음 4:23",
+    "verseText": "아버지께 참되게 예배하는 자들을 찾으시느니라.",
+    "jobs": [
+      "예배학 강사",
+      "예배자 훈련 코치",
+      "예배 커리큘럼 개발자",
+      "예배학교 운영자",
+      "워십 멘토",
+      "신앙교육 컨설턴트",
+      "찬양팀 트레이너",
+      "교리교육자",
+      "절기예배 교육자",
+      "예배리더 코치"
+    ],
+    "ministry": [
+      "예배교육 리더",
+      "찬양팀 훈련",
+      "절기예배 기획",
+      "예배자 멘토링",
+      "예배세미나 운영"
+    ],
+    "role": "예배의 본질을 가르치며 다음세대 예배자를 세우는 교육자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예배교사",
+      "#워십멘토"
+    ]
+  },
+  "L+M+P": {
+    "title": "전략적 선교 기도 리더",
+    "area": "리더십 · 전도 · 기도",
+    "summary": [
+      "기도로 선교 전략을 세우며 복음의 문을 여는 리더.",
+      "영적 통찰과 리더십으로 선교팀을 이끈다.",
+      "기도로 열방을 품고 비전을 실행하는 선교 리더."
+    ],
+    "calling": "기도로 선교의 길을 여는 전략가.",
+    "verseRef": "이사야 6:8",
+    "verseText": "내가 누구를 보내며 누가 우리를 위하여 갈꼬.",
+    "jobs": [
+      "선교단체 리더",
+      "중보기도 운동가",
+      "선교전략가",
+      "기도운동 코디네이터",
+      "선교 컨퍼런스 강사",
+      "세계기도운동 지도자",
+      "단기선교팀장",
+      "지역선교 리더",
+      "교단 선교기획자",
+      "복음 네트워크 리더"
+    ],
+    "ministry": [
+      "선교팀 리더",
+      "기도회 인도",
+      "전도 전략기획",
+      "선교컨퍼런스 운영",
+      "해외선교 관리"
+    ],
+    "role": "기도와 리더십으로 선교를 이끄는 전략적 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#선교리더",
+      "#기도전략가"
+    ]
+  },
+  "L+M+R": {
+    "title": "교회 부흥 마케터",
+    "area": "리더십 · 전도 · 창의",
+    "summary": [
+      "복음을 현대적 언어로 전달하는 창의 리더.",
+      "미디어와 문화를 통해 복음의 메시지를 확산한다.",
+      "교회 부흥을 위한 전략과 감동을 함께 기획하는 리더."
+    ],
+    "calling": "복음을 세련되게 전하는 교회 커뮤니케이터.",
+    "verseRef": "로마서 1:16",
+    "verseText": "내가 복음을 부끄러워하지 아니하노니.",
+    "jobs": [
+      "교회 홍보전략가",
+      "SNS 콘텐츠 크리에이터",
+      "문화선교 디렉터",
+      "캠페인 디자이너",
+      "온라인선교 기획자",
+      "청년문화 리더",
+      "교회 미디어 운영자",
+      "복음 캠페인 마케터",
+      "예배홍보 기획자",
+      "복음행사 감독"
+    ],
+    "ministry": [
+      "교회 홍보팀",
+      "문화선교팀",
+      "전도캠페인",
+      "SNS운영",
+      "영상예배기획"
+    ],
+    "role": "복음을 창의적으로 전달하는 미디어 선교 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#교회마케터",
+      "#복음전략가"
+    ]
+  },
+  "L+M+S": {
+    "title": "실천적 선교 행정가",
+    "area": "리더십 · 전도 · 섬김",
+    "summary": [
+      "선교와 봉사를 체계적으로 조직하는 행정형 리더.",
+      "선교 현장을 위한 재정과 인력을 관리한다.",
+      "사역의 현장에서 계획과 섬김을 함께 실천한다."
+    ],
+    "calling": "섬김으로 선교를 조직하는 실행 리더.",
+    "verseRef": "야고보서 1:22",
+    "verseText": "말씀을 행하는 자가 되라.",
+    "jobs": [
+      "봉사단체 디렉터",
+      "구호단체 실무자",
+      "선교프로젝트 매니저",
+      "자원봉사 행정가",
+      "선교재정 담당자",
+      "지역봉사 코디네이터",
+      "선교기획 컨설턴트",
+      "해외봉사 관리자",
+      "사회선교 매니저",
+      "선교행정 총괄자"
+    ],
+    "ministry": [
+      "선교행정 운영",
+      "구제사역",
+      "봉사자 조직",
+      "자원봉사 관리",
+      "선교기획팀"
+    ],
+    "role": "선교와 봉사를 행정적으로 조직하는 실천형 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#선교행정가",
+      "#봉사리더"
+    ]
+  },
+  "L+M+T": {
+    "title": "전도 훈련 시스템 구축자",
+    "area": "리더십 · 전도 · 가르침",
+    "summary": [
+      "평신도를 전도자로 세우는 복음훈련 전문가.",
+      "훈련 시스템을 설계해 교회의 선교 역량을 높인다.",
+      "리더십으로 복음의 열정을 확산시키는 교사형 리더."
+    ],
+    "calling": "가르침으로 복음의 일꾼을 세우는 훈련가.",
+    "verseRef": "디모데후서 2:2",
+    "verseText": "충성된 사람들에게 가르쳐 다른 사람들도 가르치게 하라.",
+    "jobs": [
+      "전도훈련 강사",
+      "제자훈련 설계자",
+      "복음훈련 교재 저자",
+      "교회리더십 트레이너",
+      "선교교육 강사",
+      "변증교육 전문가",
+      "전도시스템 컨설턴트",
+      "교육행정 디렉터",
+      "복음세미나 운영자",
+      "평신도리더 코치"
+    ],
+    "ministry": [
+      "전도훈련",
+      "리더훈련",
+      "선교교육",
+      "교회세미나",
+      "제자양육"
+    ],
+    "role": "훈련으로 교회를 세우는 복음교육 전문가.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#전도훈련가",
+      "#복음리더"
+    ]
+  },
+  "L+M+W": {
+    "title": "복음 확산 예배 기획자",
+    "area": "리더십 · 전도 · 예배",
+    "summary": [
+      "예배를 통해 복음을 전파하는 창의적 기획자.",
+      "예배와 공연을 복음전도의 장으로 디자인한다.",
+      "찬양과 말씀으로 사람들의 마음을 여는 복음 예배자."
+    ],
+    "calling": "예배로 복음을 전하는 예술적 리더.",
+    "verseRef": "시편 100:2",
+    "verseText": "기쁨으로 여호와를 섬기며 노래하며 그의 앞에 나아가라.",
+    "jobs": [
+      "대형예배 기획자",
+      "복음페스티벌 감독",
+      "문화예배 연출가",
+      "CCM프로듀서",
+      "미디어예배 운영자",
+      "예배콘텐츠 기획자",
+      "공연연출 리더",
+      "예배홍보 디렉터",
+      "찬양집회 리더",
+      "예배기획 디렉터"
+    ],
+    "ministry": [
+      "열린예배 운영",
+      "찬양축제 기획",
+      "예배홍보",
+      "문화예배 연출",
+      "예배자 양육"
+    ],
+    "role": "예배로 복음을 전하고 문화를 변화시키는 예배기획자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예배전도자",
+      "#워십기획자"
+    ]
+  },
+  "L+P+R": {
+    "title": "비전 기도 디자이너",
+    "area": "리더십 · 기도 · 창의",
+    "summary": [
+      "기도와 창의력으로 공동체의 비전을 설계하는 리더.",
+      "하나님의 뜻을 시각화해 비전을 구체화한다.",
+      "기도를 전략으로 바꾸는 신앙 디자이너."
+    ],
+    "calling": "기도로 비전을 세우는 창의적 리더.",
+    "verseRef": "하박국 2:2",
+    "verseText": "이 묵시를 기록하여 판에 명백히 새기라.",
+    "jobs": [
+      "비전워크숍 코치",
+      "기도전략가",
+      "영성리더 코치",
+      "공동체 비전기획자",
+      "교회 비전플래너",
+      "기도회 콘텐츠 기획자",
+      "리더십 교육자",
+      "중보기도 리더",
+      "사역 비전 컨설턴트",
+      "기도자료 디자이너"
+    ],
+    "ministry": [
+      "비전기도회",
+      "리더기도팀",
+      "비전워크숍",
+      "교회전략회의",
+      "영성훈련"
+    ],
+    "role": "기도로 비전을 세우고 실행하는 리더십 디자이너.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#비전리더",
+      "#기도전략가"
+    ]
+  },
+  "L+P+S": {
+    "title": "영적 권위의 봉사 리더",
+    "area": "리더십 · 기도 · 섬김",
+    "summary": [
+      "기도로 봉사자들을 세우고 방향을 제시하는 리더.",
+      "섬김의 현장에서 모범을 보이며 팀을 이끈다.",
+      "기도와 헌신으로 교회를 세우는 실천형 리더."
+    ],
+    "calling": "기도로 섬기며 교회를 세우는 봉사 리더.",
+    "verseRef": "빌립보서 2:4",
+    "verseText": "다른 사람들의 일을 돌보라.",
+    "jobs": [
+      "봉사자 훈련가",
+      "교회운영 디렉터",
+      "재정관리 리더",
+      "헌신팀 코치",
+      "섬김멘토",
+      "기도리더",
+      "운영위원장",
+      "교회행정 리더",
+      "봉사조직 컨설턴트",
+      "사역코디네이터"
+    ],
+    "ministry": [
+      "봉사자훈련",
+      "기도회리더",
+      "운영위원",
+      "행정관리",
+      "구제팀운영"
+    ],
+    "role": "기도와 섬김으로 교회를 세우는 영적 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#봉사리더",
+      "#기도행정가"
+    ]
+  },
+  "L+P+T": {
+    "title": "영성 중심의 멘토 리더",
+    "area": "리더십 · 기도 · 가르침",
+    "summary": [
+      "기도와 말씀으로 사람을 세우는 교육형 리더.",
+      "영적 권위와 지혜로 공동체를 인도한다.",
+      "삶과 신앙을 연결하는 멘토형 지도자."
+    ],
+    "calling": "기도와 가르침으로 세대를 세우는 영적 멘토.",
+    "verseRef": "디모데후서 2:2",
+    "verseText": "충성된 사람들에게 가르쳐 다른 사람들도 가르치게 하라.",
+    "jobs": [
+      "제자훈련 리더",
+      "리더십 강사",
+      "영성훈련 코치",
+      "평신도 멘토",
+      "리더교육 강사",
+      "목회자 교육 디렉터",
+      "교회세미나 리더",
+      "코칭전문가",
+      "소그룹지도자",
+      "리더십 연구가"
+    ],
+    "ministry": [
+      "제자훈련",
+      "리더훈련",
+      "영성교육",
+      "리더멘토링",
+      "지도자양성"
+    ],
+    "role": "기도와 가르침으로 교회를 세우는 영적 멘토.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#멘토리더",
+      "#영성훈련가"
+    ]
+  },
+  "L+P+W": {
+    "title": "영감 있는 예배 인도자",
+    "area": "리더십 · 기도 · 예배",
+    "summary": [
+      "성령의 인도하심으로 예배를 이끄는 영감의 리더.",
+      "기도와 말씀으로 예배의 흐름을 준비한다.",
+      "공동체를 하나님께로 인도하는 예배 조율자."
+    ],
+    "calling": "기도로 예배를 인도하는 영감의 리더.",
+    "verseRef": "시편 100:4",
+    "verseText": "감사함으로 그의 문에 들어가며 찬송함으로 그의 궁정에 들어가라.",
+    "jobs": [
+      "워십리더",
+      "예배 디렉터",
+      "찬양 인도자",
+      "기도예배 리더",
+      "음악 예배자",
+      "예배자 훈련코치",
+      "예배행정가",
+      "집회 인도자",
+      "예배기획자",
+      "영성예배 리더"
+    ],
+    "ministry": [
+      "예배 인도",
+      "찬양 리더십",
+      "예배운영 관리",
+      "기도회 리더",
+      "예배자 멘토링"
+    ],
+    "role": "기도와 찬양으로 예배를 인도하는 영감의 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#워십리더",
+      "#기도예배자"
+    ]
+  },
+  "L+R+S": {
+    "title": "행정 혁신 리더",
+    "area": "리더십 · 창의 · 섬김",
+    "summary": [
+      "교회 운영과 공간을 혁신하는 실무형 리더.",
+      "창의적 아이디어로 환경을 개선하고 봉사를 체계화한다.",
+      "섬김을 시스템으로 만드는 행정 혁신가."
+    ],
+    "calling": "교회의 시스템과 환경을 새롭게 디자인하는 리더.",
+    "verseRef": "출애굽기 35:31",
+    "verseText": "그를 하나님의 영으로 지혜와 총명과 재주로 채우시고.",
+    "jobs": [
+      "시설 관리 총괄자",
+      "교회 행정 디자이너",
+      "공간 리모델링 디렉터",
+      "브랜딩 전문가",
+      "이벤트 연출가",
+      "데이터 관리자",
+      "운영시스템 컨설턴트",
+      "자원봉사 조직가",
+      "안전관리 리더",
+      "교회 운영 기획자"
+    ],
+    "ministry": [
+      "시설 개선",
+      "행정 혁신",
+      "공간 디자인",
+      "자원봉사 관리",
+      "행사 운영"
+    ],
+    "role": "창의와 섬김으로 교회의 운영 환경을 개선하는 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#행정혁신가",
+      "#교회디자이너"
+    ]
+  },
+  "L+R+T": {
+    "title": "교육 시스템 설계자",
+    "area": "리더십 · 창의 · 가르침",
+    "summary": [
+      "새로운 교육 구조를 설계해 신앙 성장을 돕는 리더.",
+      "학습과 리더십을 결합해 다음세대를 세운다.",
+      "교육 콘텐츠를 시스템으로 조직하는 혁신가."
+    ],
+    "calling": "가르침을 시스템으로 만드는 교육 혁신가.",
+    "verseRef": "잠언 9:9",
+    "verseText": "지혜 있는 자에게 가르치라 그가 더욱 지혜로워지리라.",
+    "jobs": [
+      "커리큘럼 개발자",
+      "교육기획 디렉터",
+      "콘텐츠 편집자",
+      "교육공학 전문가",
+      "출판기획자",
+      "신학 교육 컨설턴트",
+      "진로교육 리더",
+      "교육 매니저",
+      "창의교육 멘토",
+      "교육행정가"
+    ],
+    "ministry": [
+      "교재 개발",
+      "교사훈련",
+      "교육프로그램 설계",
+      "교육행정",
+      "진로멘토링"
+    ],
+    "role": "창의력으로 신앙 교육을 체계화하는 교육 설계자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#교육설계자",
+      "#창의리더"
+    ]
+  },
+  "L+R+W": {
+    "title": "창조적 예배 연출가",
+    "area": "리더십 · 창의 · 예배",
+    "summary": [
+      "예배를 예술로 표현하며 하나님께 영광을 돌린다.",
+      "무대·영상·조명 등으로 예배의 감동을 디자인한다.",
+      "예배의 본질을 새롭게 전달하는 워십 아티스트."
+    ],
+    "calling": "예배를 디자인하고 세상을 감동시키는 예술 예배자.",
+    "verseRef": "요한복음 4:23",
+    "verseText": "하나님은 자기에게 이렇게 예배하는 자들을 찾으시느니라.",
+    "jobs": [
+      "창조적 예배 기획자",
+      "무대 디자이너",
+      "문화사역 감독",
+      "CCM 제작자",
+      "공연 연출가",
+      "예배 콘텐츠 크리에이터",
+      "예술 교육자",
+      "예배 디렉터",
+      "건축디자인 컨설턴트",
+      "음악 감독"
+    ],
+    "ministry": [
+      "미디어팀 조직",
+      "예배 무대 디자인",
+      "문화사역 리더",
+      "절기 예배 연출",
+      "창조예배 기획"
+    ],
+    "role": "예술과 믿음을 연결해 예배를 갱신하는 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예배창작자",
+      "#빛의예술가"
+    ]
+  },
+  "L+S+T": {
+    "title": "행정·교육 총괄자",
+    "area": "리더십 · 섬김 · 가르침",
+    "summary": [
+      "교회의 행정과 교육을 조율하는 실무형 리더.",
+      "섬김의 조직을 세우고 사역자를 훈련한다.",
+      "교육과 행정을 통합하는 운영 디렉터."
+    ],
+    "calling": "섬김과 교육을 연결하는 교회의 관리자.",
+    "verseRef": "고린도전서 14:40",
+    "verseText": "모든 것을 품위 있게 하고 질서 있게 하라.",
+    "jobs": [
+      "행정간사",
+      "교육행정 디렉터",
+      "자원봉사 교육자",
+      "교회학교 교장",
+      "사무총무",
+      "리더십 교육자",
+      "평신도 훈련강사",
+      "멘토링 리더",
+      "교육컨설턴트",
+      "사역행정 리더"
+    ],
+    "ministry": [
+      "행정관리",
+      "교사훈련",
+      "새가족 교육",
+      "봉사시스템 관리",
+      "리더십 훈련"
+    ],
+    "role": "교육과 행정을 통합해 섬김의 질서를 세우는 총괄자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#행정리더",
+      "#교육총괄자"
+    ]
+  },
+  "L+S+W": {
+    "title": "예배 봉사 시스템 리더",
+    "area": "리더십 · 섬김 · 예배",
+    "summary": [
+      "예배 봉사를 체계화하고 팀을 이끄는 리더.",
+      "보이지 않는 곳에서 질서와 환경을 유지한다.",
+      "예배 봉사의 기쁨을 나누는 실천적 리더."
+    ],
+    "calling": "예배의 질서를 세우는 섬김형 리더.",
+    "verseRef": "마가복음 10:45",
+    "verseText": "섬김을 받으려 함이 아니라 섬기려 함이라.",
+    "jobs": [
+      "예배 안내 총괄자",
+      "주차·헌금 팀장",
+      "시설 관리 리더",
+      "예배 환경 디렉터",
+      "안전관리 책임자",
+      "성찬식 준비자",
+      "봉사자 교육자",
+      "청소·정리 리더",
+      "예배 운영 리더",
+      "환대 시스템 관리자"
+    ],
+    "ministry": [
+      "안내·주차 팀",
+      "성찬식 준비",
+      "예배환경 관리",
+      "봉사자 훈련",
+      "시설 점검"
+    ],
+    "role": "섬김으로 예배의 질서를 세우는 운영 리더.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예배섬김자",
+      "#봉사리더"
+    ]
+  },
+  "L+T+W": {
+    "title": "예배자 양육 디렉터",
+    "area": "리더십 · 가르침 · 예배",
+    "summary": [
+      "예배의 본질을 가르치며 예배자를 세우는 교육자.",
+      "찬양팀과 리더를 훈련해 영적 깊이를 이끈다.",
+      "예배와 삶을 연결하는 워십 멘토."
+    ],
+    "calling": "예배자를 세워 세상을 변화시키는 예배 멘토.",
+    "verseRef": "요한복음 4:23",
+    "verseText": "하나님은 자기에게 이렇게 예배하는 자들을 찾으시느니라.",
+    "jobs": [
+      "예배인도자 훈련가",
+      "찬양팀 지도자",
+      "예배학 교육자",
+      "예배커리큘럼 개발자",
+      "워십 세미나 강사",
+      "예배이론 연구자",
+      "음악 디렉터",
+      "예배 리더십 트레이너",
+      "예배 교육 자문",
+      "예배 문화 리더"
+    ],
+    "ministry": [
+      "예배교육",
+      "찬양팀 훈련",
+      "예배 기획",
+      "절기 예배 운영",
+      "예배 리더 양성"
+    ],
+    "role": "예배와 교육을 결합해 예배자를 세우는 멘토.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예배교육자",
+      "#워십리더"
+    ]
+  },
+  "M+P+R": {
+    "title": "선교 콘텐츠 전략가",
+    "area": "전도 · 기도 · 창의",
+    "summary": [
+      "기도와 창의력을 결합해 복음을 전하는 전략가.",
+      "미디어·앱 등을 활용해 복음 메시지를 새롭게 표현한다.",
+      "세상 속에서 하나님의 이야기를 만드는 콘텐츠 선교자."
+    ],
+    "calling": "창의적 도구로 복음을 전하는 기도형 전략가.",
+    "verseRef": "마태복음 5:14",
+    "verseText": "너희는 세상의 빛이라.",
+    "jobs": [
+      "선교콘텐츠 제작자",
+      "미디어 선교 기획자",
+      "디지털 선교 플랫폼 운영자",
+      "선교캠페인 기획자",
+      "영상 제작자",
+      "SNS 선교사",
+      "문화예술 홍보가",
+      "복음 스토리텔러",
+      "선교 보고서 디자이너",
+      "전도 기획자"
+    ],
+    "ministry": [
+      "온라인 전도",
+      "선교홍보",
+      "콘텐츠 제작",
+      "기도운동",
+      "미디어 사역"
+    ],
+    "role": "기도와 창의력으로 복음을 전하는 콘텐츠 선교자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#선교콘텐츠",
+      "#복음전략가"
+    ]
+  },
+  "M+P+S": {
+    "title": "구호 선교 중보자",
+    "area": "전도 · 기도 · 섬김",
+    "summary": [
+      "고난의 현장에서 기도하며 섬기는 구호 사역자.",
+      "행동과 기도로 그리스도의 사랑을 전한다.",
+      "눈물의 중보로 복음을 실천하는 사랑의 손."
+    ],
+    "calling": "기도로 섬기며 복음을 전하는 따뜻한 손.",
+    "verseRef": "야고보서 2:17",
+    "verseText": "행함이 없는 믿음은 죽은 것이라.",
+    "jobs": [
+      "구호단체 리더",
+      "의료선교사",
+      "재난 봉사팀장",
+      "사회복지 사역자",
+      "병원 사역자",
+      "선교지 지원가",
+      "식사 봉사자",
+      "기도봉사 리더",
+      "자선 단체 기획자",
+      "재활 코치"
+    ],
+    "ministry": [
+      "재해구호 팀",
+      "병원 사역",
+      "노숙인 섬김",
+      "구호물품 지원",
+      "기도봉사"
+    ],
+    "role": "기도와 섬김으로 복음을 실천하는 구호 중보자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#기도봉사자",
+      "#구호선교자"
+    ]
+  },
+  "M+P+T": {
+    "title": "선교 교육 훈련가",
+    "area": "전도 · 기도 · 가르침",
+    "summary": [
+      "기도와 말씀을 중심으로 선교 교육을 이끄는 훈련가.",
+      "평신도와 선교사를 복음의 일꾼으로 세운다.",
+      "배움과 실천을 연결하는 복음 트레이너."
+    ],
+    "calling": "배우고 가르쳐 복음을 확산시키는 선교 교사.",
+    "verseRef": "디모데후서 2:2",
+    "verseText": "충성된 사람들에게 가르쳐 다른 사람들도 가르치게 하라.",
+    "jobs": [
+      "선교훈련 강사",
+      "전도학교 교사",
+      "제자훈련 강사",
+      "선교리더 코치",
+      "세계관 교육자",
+      "복음변증 강사",
+      "전도 소그룹 코치",
+      "선교사 트레이너",
+      "통독 강의자",
+      "선교 교육 기획자"
+    ],
+    "ministry": [
+      "전도훈련",
+      "선교교육",
+      "리더교육",
+      "변증강좌",
+      "세계관 세미나"
+    ],
+    "role": "가르침으로 복음을 확산시키는 복음 훈련가.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#선교교육자",
+      "#복음트레이너"
+    ]
+  },
+  "M+P+W": {
+    "title": "전도 부흥 예배자",
+    "area": "전도 · 기도 · 예배",
+    "summary": [
+      "기도와 예배로 복음의 능력을 전하는 예배자.",
+      "찬양과 기도로 복음의 문을 여는 리더.",
+      "예배를 통해 사람들을 하나님께 이끄는 복음 예배자."
+    ],
+    "calling": "예배로 복음을 전하고 세상을 일으키는 예배자.",
+    "verseRef": "요한복음 12:32",
+    "verseText": "내가 땅에서 들리면 모든 사람을 내게로 이끌겠노라.",
+    "jobs": [
+      "부흥집회 기획자",
+      "예배전도자",
+      "찬양중보사역자",
+      "복음축제 기획자",
+      "선교지 워십리더",
+      "CCM 작곡가",
+      "기도 집회 리더",
+      "예배 콘텐츠 제작자",
+      "복음 세미나 강사",
+      "열린예배 디렉터"
+    ],
+    "ministry": [
+      "열린예배 운영",
+      "찬양전도팀",
+      "부흥집회 기획",
+      "기도회 운영",
+      "복음축제"
+    ],
+    "role": "찬양과 기도로 복음을 전하는 예배 선교자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#전도예배자",
+      "#워십선교자"
+    ]
+  },
+  "M+R+S": {
+    "title": "문화 봉사 선교 기획자",
+    "area": "전도 · 창의 · 섬김",
+    "summary": [
+      "문화와 봉사를 통해 복음을 심는 선교 기획자.",
+      "예술과 서비스로 하나님의 사랑을 전한다.",
+      "창의와 행동으로 복음을 실천하는 문화 선교자."
+    ],
+    "calling": "섬김으로 문화를 변화시키는 복음 디자이너.",
+    "verseRef": "마태복음 5:16",
+    "verseText": "너희 빛이 사람 앞에 비치게 하라.",
+    "jobs": [
+      "문화센터 운영자",
+      "사회적 기업 디자이너",
+      "재능기부 기획자",
+      "SNS 캠페인 운영자",
+      "예술 봉사 코디네이터",
+      "환경 캠페인 기획자",
+      "기독 문화 연구가",
+      "지역 프로젝트 매니저",
+      "문화 선교사",
+      "예술봉사 리더"
+    ],
+    "ministry": [
+      "문화선교 팀",
+      "지역사회 봉사",
+      "재능기부 사역",
+      "환경캠페인",
+      "SNS 복음 홍보"
+    ],
+    "role": "문화와 섬김으로 복음을 전하는 창의 선교자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#문화선교자",
+      "#섬김기획자"
+    ]
+  },
+  "M+R+T": {
+    "title": "복음 변증 콘텐츠 제작자",
+    "area": "전도 · 창의 · 가르침",
+    "summary": [
+      "복음을 현대적 언어로 해석하는 콘텐츠 제작자.",
+      "논리와 예술로 신앙의 진리를 전한다.",
+      "지식과 창의력으로 복음을 변증하는 교육자."
+    ],
+    "calling": "이성과 감성으로 복음을 전하는 크리에이터.",
+    "verseRef": "베드로전서 3:15",
+    "verseText": "너희 속에 있는 소망에 관한 이유를 묻는 자에게 대답할 것을 항상 준비하라.",
+    "jobs": [
+      "변증 콘텐츠 기획자",
+      "복음 유튜버",
+      "강의 영상 제작자",
+      "신앙토크 진행자",
+      "세계관 강사",
+      "과학·신앙 강연자",
+      "복음 웹툰 작가",
+      "온라인 교육자",
+      "문화 변증가",
+      "팟캐스트 호스트"
+    ],
+    "ministry": [
+      "복음변증 세미나",
+      "청년부 강의",
+      "복음 토론모임",
+      "미디어교육",
+      "신앙 포럼"
+    ],
+    "role": "이성과 감성으로 복음을 설명하는 변증 크리에이터.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#복음변증가",
+      "#콘텐츠전도자"
+    ]
+  },
+  "M+R+W": {
+    "title": "문화 선교 콘텐츠 디자이너",
+    "area": "전도 · 창의 · 예배",
+    "summary": [
+      "예배와 예술을 통해 복음을 전하는 문화 디자이너.",
+      "공연·영상·음악으로 복음의 감동을 전한다.",
+      "하나님의 이야기를 문화의 언어로 번역하는 예배자."
+    ],
+    "calling": "예술로 복음을 전하는 문화 예배자.",
+    "verseRef": "시편 96:3",
+    "verseText": "그의 영광을 모든 민족 중에 선포하라.",
+    "jobs": [
+      "공연 감독",
+      "영상 제작자",
+      "문화예배 연출가",
+      "CCM 감독",
+      "예술선교 리더",
+      "미디어 아트 기획자",
+      "예배 미디어 감독",
+      "워십 학교 운영자",
+      "드라마 작가",
+      "문화사역 감독"
+    ],
+    "ministry": [
+      "공연예배 기획",
+      "문화예배 운영",
+      "예술선교팀",
+      "영상예배 제작",
+      "청년예술 사역"
+    ],
+    "role": "예배와 예술로 복음을 전하는 창의 선교자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#문화예배자",
+      "#예술선교자"
+    ]
+  },
+  "M+S+T": {
+    "title": "실천적 선교 교육가",
+    "area": "전도 · 섬김 · 가르침",
+    "summary": [
+      "봉사와 교육을 통합해 복음을 전하는 선교 교사.",
+      "삶으로 가르치고 가르침으로 섬기는 실천 사역자.",
+      "신앙 교육을 현장으로 이끄는 전도 멘토."
+    ],
+    "calling": "섬김으로 전하고 가르치는 복음 교사.",
+    "verseRef": "마태복음 28:19",
+    "verseText": "모든 민족을 제자로 삼아 가르치라.",
+    "jobs": [
+      "선교 교육자",
+      "기술교육 선교사",
+      "다문화 교육자",
+      "공부방 사역자",
+      "의료선교 코치",
+      "직업훈련 강사",
+      "청소년 멘토",
+      "지역교육 리더",
+      "선교훈련 강사",
+      "평신도 강의자"
+    ],
+    "ministry": [
+      "교육선교",
+      "기술봉사",
+      "공부방 사역",
+      "다문화 지원",
+      "훈련 진행"
+    ],
+    "role": "배움과 섬김으로 복음을 실천하는 교육자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#교육선교자",
+      "#복음교사"
+    ]
+  },
+  "M+S+W": {
+    "title": "지역 초청 예배 봉사자",
+    "area": "전도 · 섬김 · 예배",
+    "summary": [
+      "이웃을 초청해 예배로 연결하는 따뜻한 사역자.",
+      "예배를 통한 섬김으로 지역을 품는다.",
+      "사랑의 손길로 복음을 전하는 현장 예배자."
+    ],
+    "calling": "이웃을 예배로 초대하는 사랑의 봉사자.",
+    "verseRef": "마태복음 5:16",
+    "verseText": "너희 빛이 사람 앞에 비치게 하라.",
+    "jobs": [
+      "지역예배 기획자",
+      "찬양전도 봉사자",
+      "절기행사 기획자",
+      "선교 봉사자",
+      "문화축제 기획자",
+      "교회시설 봉사자",
+      "커뮤니티 운영자",
+      "기술 선교사",
+      "홍보 봉사자",
+      "문화행사 리더"
+    ],
+    "ministry": [
+      "지역예배 봉사",
+      "초청행사",
+      "찬양전도",
+      "시설봉사",
+      "선교 지원"
+    ],
+    "role": "예배와 봉사로 복음을 전하는 따뜻한 사역자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예배봉사자",
+      "#이웃사역자"
+    ]
+  },
+  "M+T+W": {
+    "title": "예배 중심의 전도 강사",
+    "area": "전도 · 가르침 · 예배",
+    "summary": [
+      "예배와 말씀을 통해 복음을 선포하는 교육자.",
+      "가르침과 찬양을 결합해 복음을 심는다.",
+      "예배를 복음 전도의 현장으로 만드는 교사."
+    ],
+    "calling": "예배로 복음을 가르치는 말씀 교사.",
+    "verseRef": "로마서 10:17",
+    "verseText": "믿음은 들음에서 나며 들음은 그리스도의 말씀으로 말미암는다.",
+    "jobs": [
+      "복음 강사",
+      "예배 교육자",
+      "설교 코치",
+      "전도 세미나 강사",
+      "예배 리더 교육자",
+      "예배학 강사",
+      "복음 컨퍼런스 기획자",
+      "말씀학교 운영자",
+      "전도설교자",
+      "복음 강연자"
+    ],
+    "ministry": [
+      "복음 세미나",
+      "예배교육",
+      "전도설교",
+      "말씀학교",
+      "복음훈련"
+    ],
+    "role": "예배와 말씀으로 복음을 전하는 강사형 예배자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#복음강사",
+      "#예배교사"
+    ]
+  },
+  "P+R+S": {
+    "title": "예술적 기도 코디네이터",
+    "area": "기도 · 창의 · 섬김",
+    "summary": [
+      "기도와 예술로 교회의 분위기를 살리는 섬김자.",
+      "중보와 장식, 음악으로 기도 공간을 조성한다.",
+      "창의적 감각으로 기도의 열기를 전달하는 리더."
+    ],
+    "calling": "기도가 흐르는 공간을 디자인하는 사람.",
+    "verseRef": "시편 84:10",
+    "verseText": "주의 궁정에서의 한 날이 다른 곳의 천 날보다 나은즉.",
+    "jobs": [
+      "기도실 디자이너",
+      "예배 환경 연출가",
+      "기도문 작가",
+      "묵상공간 기획자",
+      "음향·조명 연출자",
+      "중보기도 팀장",
+      "예술기도회 기획자",
+      "성전 장식 리더",
+      "기도캠프 기획자",
+      "예술중보자"
+    ],
+    "ministry": [
+      "기도공간 관리",
+      "묵상 공간 연출",
+      "기도회 기획",
+      "중보기도팀",
+      "기도캠프 운영"
+    ],
+    "role": "기도와 예술로 하나님의 임재를 조성하는 섬김자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#기도디자이너",
+      "#예술중보자"
+    ]
+  },
+  "P+R+T": {
+    "title": "영적 지식 콘텐츠 창조자",
+    "area": "기도 · 창의 · 가르침",
+    "summary": [
+      "기도의 깊이를 창의적 콘텐츠와 교육으로 풀어내는 영성 교육자.",
+      "말씀과 묵상을 현대적 언어와 도구로 전달해 성도의 성장을 돕는다.",
+      "영적 지식을 배우기 쉬운 구조로 설계하는 콘텐츠형 교사."
+    ],
+    "calling": "기도와 지식을 창의적 콘텐츠로 전하는 영성 교육자.",
+    "verseRef": "골로새서 3:16",
+    "verseText": "그리스도의 말씀이 너희 속에 풍성히 거하여… 모든 지혜로 피차 가르치며 권면하고…",
+    "jobs": [
+      "창의적 교리/성경 학습 콘텐츠 제작자",
+      "기도학교 커리큘럼 개발자",
+      "영적 지식 전수를 위한 미디어 활용 강사",
+      "영성 분야 전문 강사/교수",
+      "기도문/찬양 작곡가",
+      "기독교 영성 서적 저자",
+      "성경적 명상/묵상 프로그램 개발자",
+      "영성 수련회 교육 프로그램 설계자",
+      "창의적 방식으로 신앙의 기초를 가르치는 교육자",
+      "영적 성장을 위한 교육용 앱 개발자"
+    ],
+    "ministry": [
+      "창의적 교리/성경 학습 콘텐츠 제작",
+      "기도학교 커리큘럼 개발",
+      "영적 지식 전수를 위한 미디어 활용",
+      "영성 분야 전문 강사",
+      "기도문/찬양 작곡"
+    ],
+    "role": "기도와 창의적 가르침으로 성도의 영적 이해를 돕는 콘텐츠형 교육자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#영성콘텐츠",
+      "#기도교육자"
+    ]
+  },
+  "P+R+W": {
+    "title": "영감 있는 예배 연출자",
+    "area": "기도 · 창의 · 예배",
+    "summary": [
+      "기도의 감각과 창의적 표현으로 예배의 몰입을 돕는 예배 연출자.",
+      "시각, 음악, 공간을 통해 성도가 하나님께 집중하도록 길을 연다.",
+      "예배자들의 영성을 세우며 새로운 예배 흐름을 기획한다."
+    ],
+    "calling": "기도와 예술로 예배의 영감을 깨우는 예배 연출자.",
+    "verseRef": "요한복음 4:24",
+    "verseText": "하나님은 영이시니 예배하는 자가 영과 진리로 예배할지니라.",
+    "jobs": [
+      "영적 부흥을 위한 특별 기도회 연출가",
+      "예배 분위기 개선 및 몰입도 향상 전문가",
+      "예배 중 영감 있는 비주얼/아트 사용 전문가",
+      "창의적 찬양과 경배 인도자",
+      "예배자 영성 코칭 전문가",
+      "미디어 아트를 활용한 예배 연출가",
+      "예배 음악/영상 콘텐츠 창작자",
+      "예배 공간의 예술적 영감을 위한 기도 사역자",
+      "새로운 예배 형식을 실험하는 기획자",
+      "찬양/기도 기반의 공연 예술가"
+    ],
+    "ministry": [
+      "영적 부흥을 위한 특별 기도회 연출",
+      "예배 분위기 개선 및 몰입도 향상",
+      "예배 중 영감 있는 비주얼/아트 사용",
+      "창의적 찬양과 경배",
+      "예배자 영성 코칭"
+    ],
+    "role": "기도와 창의적 감각으로 예배의 흐름과 영적 분위기를 세우는 연출자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예배연출자",
+      "#영감있는예배"
+    ]
+  },
+  "P+S+T": {
+    "title": "영성 관리 멘토",
+    "area": "기도 · 섬김 · 가르침",
+    "summary": [
+      "기도와 섬김으로 사역자와 성도의 영적 건강을 돌보는 멘토.",
+      "말씀과 훈련을 통해 봉사자의 마음과 사명을 세운다.",
+      "공동체 안에 지속 가능한 영성 관리 문화를 만드는 안내자."
+    ],
+    "calling": "섬기는 이들의 영성을 돌보고 세우는 기도 멘토.",
+    "verseRef": "베드로전서 4:10",
+    "verseText": "각각 은사를 받은 대로 하나님의 여러 가지 은혜를 맡은 선한 청지기 같이 서로 봉사하라.",
+    "jobs": [
+      "영적 리더 멘토링 코치",
+      "중보기도팀 훈련 및 관리 책임자",
+      "권사/집사 영성 교육 강사",
+      "사역자를 위한 기도 훈련 전문가",
+      "봉사자의 영적 상태 돌봄 멘토",
+      "교회 내 중직자 영성 관리 책임자",
+      "소그룹 리더 영성 교육 전문가",
+      "평신도 사역자 기도 훈련 프로그램 설계자",
+      "성경적 부르심 교육 강사",
+      "섬김을 위한 영성 훈련 교재 저자"
+    ],
+    "ministry": [
+      "영적 리더 멘토링",
+      "중보기도팀 훈련 및 관리",
+      "권사/집사 영성 교육",
+      "사역자를 위한 기도 훈련",
+      "봉사자의 영적 상태 돌봄"
+    ],
+    "role": "기도와 말씀 훈련으로 섬기는 사람들의 영성을 관리하고 회복시키는 멘토.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#영성멘토",
+      "#기도훈련"
+    ]
+  },
+  "P+S+W": {
+    "title": "영적 분위기 섬김자",
+    "area": "기도 · 섬김 · 예배",
+    "summary": [
+      "예배 전후의 영적 분위기를 기도와 섬김으로 준비하는 사람.",
+      "성도들의 기도 제목을 품고 예배 공동체를 조용히 받쳐준다.",
+      "눈에 띄지 않는 자리에서 예배의 따뜻함과 질서를 세운다."
+    ],
+    "calling": "예배의 영적 분위기를 기도와 섬김으로 준비하는 사람.",
+    "verseRef": "시편 100:4",
+    "verseText": "감사함으로 그의 문에 들어가며 찬송함으로 그의 궁정에 들어가서…",
+    "jobs": [
+      "예배 전 중보 기도회 리더",
+      "예배 후 성도들의 개인 기도 제목 섬김 봉사자",
+      "헌금 위원 영적 준비 멘토",
+      "성도들을 위한 축복 기도 사역자",
+      "찬양팀 영성 지원 스태프",
+      "예배 중보기도 시스템 관리 봉사자",
+      "교회 시설 영적 분위기 조성 봉사자",
+      "예배 전후 성도 환대 및 기도 봉사자",
+      "성찬/세례식 영적 준비 봉사자",
+      "예배를 위한 환경 청결 및 정돈 봉사자"
+    ],
+    "ministry": [
+      "예배 전 중보 기도회",
+      "예배 후 성도들의 개인 기도 제목 섬김",
+      "헌금 위원 영적 준비",
+      "성도들을 위한 축복 기도 사역",
+      "찬양팀 영성 지원"
+    ],
+    "role": "기도와 섬김으로 예배 공동체가 하나님께 집중하도록 돕는 숨은 조력자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예배섬김",
+      "#중보기도"
+    ]
+  },
+  "P+T+W": {
+    "title": "말씀/기도 훈련 전문가",
+    "area": "기도 · 가르침 · 예배",
+    "summary": [
+      "말씀과 기도의 균형으로 예배자를 훈련하는 영성 교사.",
+      "예배의 신학적 의미를 가르치고 실제 기도 생활로 연결한다.",
+      "성도들이 예배 안에서 말씀을 듣고 삶으로 반응하도록 돕는다."
+    ],
+    "calling": "말씀과 기도로 예배자를 세우는 영성 훈련가.",
+    "verseRef": "로마서 10:17",
+    "verseText": "믿음은 들음에서 나며 들음은 그리스도의 말씀으로 말미암았느니라.",
+    "jobs": [
+      "예배 전후 영적 준비 모임 인도자",
+      "말씀과 기도의 균형 있는 강조 강사",
+      "예배학적 관점에서 기도 훈련 전문가",
+      "예배를 위한 신학적 교육 강사",
+      "예배 영적 분위기 조성 코치",
+      "영성 수련회/집회 강사",
+      "성경적 예배론 교육 전문가",
+      "성도들의 큐티/기도 생활 교육 코치",
+      "찬양팀 영성 및 훈련 지도자",
+      "예배 중 말씀 묵상 및 적용 교육 전문가"
+    ],
+    "ministry": [
+      "예배 전후 영적 준비 모임 인도",
+      "말씀과 기도의 균형 있는 강조",
+      "예배학적 관점에서 기도 훈련",
+      "예배를 위한 신학적 교육",
+      "예배 영적 분위기 조성"
+    ],
+    "role": "말씀과 기도 훈련으로 예배자의 내면과 삶을 세우는 교육자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#말씀기도훈련",
+      "#예배교육"
+    ]
+  },
+  "R+S+T": {
+    "title": "교육 환경 개선 설계자",
+    "area": "창의 · 섬김 · 가르침",
+    "summary": [
+      "창의적 도구와 섬김으로 교육 현장을 개선하는 설계자.",
+      "교재, 공간, 시스템을 정비해 배움이 실제로 일어나게 돕는다.",
+      "다음세대와 성도들이 쉽게 배우도록 환경을 만드는 실무형 교육자."
+    ],
+    "calling": "배움이 살아나는 교육 환경을 창의적으로 섬기는 설계자.",
+    "verseRef": "출애굽기 35:31",
+    "verseText": "하나님의 영으로 지혜와 총명과 지식과 여러 가지 재주로 채우시고.",
+    "jobs": [
+      "교회 자료 디자인 및 교육 전문가",
+      "주일학교 교재/교구 제작 전문가",
+      "전문 기술 교육 봉사 강사",
+      "교회 내 새로운 교육 시스템 개발자",
+      "젊은 세대 맞춤형 교육 환경 구축 컨설턴트",
+      "창의적 학습 도구 개발 봉사자",
+      "미디어 교육 기술 봉사 강사",
+      "교회 교육용 공간 인테리어 디자이너",
+      "성경적 스토리텔링 시각화 교육 전문가",
+      "교육 프로그램 효율화를 위한 시스템 설계자"
+    ],
+    "ministry": [
+      "교회 자료 디자인 및 교육",
+      "주일학교 교재/교구 제작",
+      "전문 기술 교육 봉사",
+      "교회 내 새로운 교육 시스템 개발",
+      "젊은 세대 맞춤형 교육 환경 구축"
+    ],
+    "role": "창의적 섬김으로 교육 자료와 환경을 개선하는 실천형 교육 설계자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#교육환경설계",
+      "#창의섬김"
+    ]
+  },
+  "R+S+W": {
+    "title": "예술적 섬김 연출가",
+    "area": "창의 · 섬김 · 예배",
+    "summary": [
+      "예배 공간과 분위기를 창의적 섬김으로 아름답게 준비하는 사람.",
+      "음향, 조명, 장식, 시각 요소를 통해 예배의 흐름을 돕는다.",
+      "예술적 감각을 섬김으로 사용해 공동체의 예배 경험을 풍성하게 한다."
+    ],
+    "calling": "예술적 감각으로 예배를 섬기는 창의적 연출가.",
+    "verseRef": "시편 96:9",
+    "verseText": "아름답고 거룩한 것으로 여호와께 예배할지어다.",
+    "jobs": [
+      "교회 환경 디자인 봉사 전문가",
+      "예배 중 시각/청각적 요소 지원 스태프",
+      "무대 설치/음향/조명 관리 전문가",
+      "절기별 특별 무대 장치 제작자",
+      "예배팀 복장/스타일링 조언가",
+      "교회 시설의 예술적 미화 봉사자",
+      "영상/미디어 장비 관리 및 봉사자",
+      "예배 공간의 예술적 영감을 위한 연출가",
+      "찬양팀 의상/소품 디자인 봉사자",
+      "교회 시설 리모델링 시공 봉사자"
+    ],
+    "ministry": [
+      "교회 환경 디자인 봉사",
+      "예배 중 시각/청각적 요소 지원",
+      "무대 설치/음향/조명 관리",
+      "절기별 특별 무대 장치 제작",
+      "예배팀 복장/스타일링 조언"
+    ],
+    "role": "창의적 예술 감각과 섬김으로 예배 공간과 흐름을 돕는 연출가.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예술섬김",
+      "#예배공간"
+    ]
+  },
+  "R+T+W": {
+    "title": "미디어/예술 교육 전문가",
+    "area": "창의 · 가르침 · 예배",
+    "summary": [
+      "미디어와 예술을 통해 예배와 말씀 교육을 연결하는 전문가.",
+      "창의적 콘텐츠로 설교, 강의, 예배 훈련의 전달력을 높인다.",
+      "기술과 예술을 신앙 교육의 도구로 사용하는 예배 교육자."
+    ],
+    "calling": "미디어와 예술로 예배 교육을 새롭게 여는 전문가.",
+    "verseRef": "시편 33:3",
+    "verseText": "새 노래로 그를 노래하며 즐거운 소리로 아름답게 연주할지어다.",
+    "jobs": [
+      "예배 디자인 교육 강사",
+      "미디어 활용 설교/강의 전문가",
+      "교회 웹사이트/앱 개발 및 교육 강사",
+      "예배 콘텐츠 개발(영상, 음악) 전문가",
+      "시청각 교육 전문가",
+      "예배 기술(Tech) 훈련 교육자",
+      "CCM 작곡/편곡 이론 및 실습 강사",
+      "예배 미디어 아카데미 운영자",
+      "창의적 설교/강의 기법 코치",
+      "예배 공간 음향/영상 시스템 교육 컨설턴트"
+    ],
+    "ministry": [
+      "예배 디자인 교육",
+      "미디어 활용 설교/강의",
+      "교회 웹사이트/앱 개발 및 교육",
+      "예배 콘텐츠 개발(영상, 음악)",
+      "시청각 교육 전문가"
+    ],
+    "role": "미디어와 예술을 활용해 예배와 말씀 교육을 효과적으로 전달하는 전문가.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#미디어예배",
+      "#예술교육"
+    ]
+  },
+  "S+T+W": {
+    "title": "실제적 예배 도우미",
+    "area": "섬김 · 가르침 · 예배",
+    "summary": [
+      "예배 현장의 실제 필요를 섬기고 가르치는 실무형 예배 도우미.",
+      "안내, 질서, 교육, 준비를 통해 성도들이 예배에 집중하도록 돕는다.",
+      "작은 섬김을 말씀의 의미와 연결해 공동체를 세운다."
+    ],
+    "calling": "예배의 실제 현장을 섬기고 가르치는 든든한 도우미.",
+    "verseRef": "고린도전서 14:40",
+    "verseText": "모든 것을 품위 있게 하고 질서 있게 하라.",
+    "jobs": [
+      "예배 안내 및 질서 교육 담당자",
+      "교회 식사 봉사와 신앙 나눔 리더",
+      "주일학교 공과 지도 교사 (실무 교육)",
+      "성경 통독반 리더",
+      "교회 행사 진행 및 교육 코디네이터",
+      "예배를 위한 시설/물품 관리 및 교육 담당",
+      "새가족 예배 교육 및 정착 봉사자",
+      "헌금/봉사 사역의 의미 교육 강사",
+      "교회 환경 관리를 통한 예배 준비 봉사자",
+      "평신도 예전 교육 및 실무 봉사자"
+    ],
+    "ministry": [
+      "예배 안내 및 질서 교육",
+      "교회 식사 봉사와 신앙 나눔",
+      "주일학교 공과 지도",
+      "성경 통독반 리더",
+      "교회 행사 진행 및 교육"
+    ],
+    "role": "섬김과 가르침으로 예배 현장의 질서와 따뜻함을 세우는 실무 사역자.",
+    "hashtags": [
+      "#FaithMeetsTalent",
+      "#예배도우미",
+      "#실천교육"
+    ]
+  }
+} /* __EXTENDED_END__ */;
+
 /* ===== 상태 관리 ===== */
-const STORAGE_KEY = 'talentroad_state_v1';
 let state = { i:0, answers:[], rt:[], name:'', gender:'', age:'', region:'' };
 let qStart = 0, submitting = false;
-
-function saveState(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
-}
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return null;
-    const s = JSON.parse(raw);
-    if(!Array.isArray(s.answers) || s.answers.length !== 60) return null;
-    return s;
-  }catch(e){ return null; }
-}
-function clearState(){
-  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
-}
 
 /* ===== UI 잠금 함수 ===== */
 function lockNav(lock){
@@ -371,50 +3014,45 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.answers = new Array(QUESTIONS.length).fill(null);
     state.rt = new Array(QUESTIONS.length).fill(0);
     state.i = 0;
-    saveState();
     showQuiz();
   });
 
-  // 이전 세션 복원
-  const saved = loadState();
-  if(saved){
-    const answered = saved.answers.filter(a=>a!=null).length;
-    if(answered > 0 && answered < QUESTIONS.length){
-      if(confirm(`이전 응답 ${answered}/${QUESTIONS.length}문항이 있습니다. 이어서 하시겠어요?\n(취소 시 새로 시작)`)){
-        state = saved;
-        showQuiz();
-      } else {
-        clearState();
-      }
-    } else {
-      clearState();
-    }
-  }
 
-  $('#btn-clear').addEventListener('click', ()=>{ clearState(); location.reload(); });
 
-  // 키보드 단축키: 1~5 선택, ←→ 이전/다음
-  document.addEventListener('keydown', (e)=>{
-    if($('#screen-quiz').classList.contains('hidden')) return;
-    if(submitting) return;
-    const tag = (e.target.tagName||'').toLowerCase();
-    if(tag === 'input' || tag === 'textarea' || tag === 'select') return;
-    if(e.key >= '1' && e.key <= '5'){
-      const radio = document.querySelector(`input[name="q${state.i}"][value="${e.key}"]`);
-      if(radio){ radio.checked = true; radio.dispatchEvent(new Event('change')); e.preventDefault(); }
-    } else if(e.key === 'ArrowRight' || e.key === 'Enter'){
-      if(state.answers[state.i]) { next(); e.preventDefault(); }
-    } else if(e.key === 'ArrowLeft'){
-      prev(); e.preventDefault();
-    }
-  });
+  $('#btn-clear').addEventListener('click', ()=>location.reload());
   $('#btn-prev').addEventListener('click', prev);
   $('#btn-next').addEventListener('click', next);
-  $('#btn-retry').addEventListener('click', ()=>{ clearState(); location.reload(); });
-  $('#btn-download').addEventListener('click', ()=>{
+  $('#btn-retry').addEventListener('click', ()=>location.reload());
+  $('#btn-download').addEventListener('click', async ()=>{
     const target = $('#result-card');
-    const opt = { margin:10, filename:`달란트로드_결과_${Date.now()}.pdf`, image:{type:'jpeg',quality:0.98}, html2pdf:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} };
-    html2pdf().from(target).set(opt).save();
+    target.classList.add('pdf-export');
+
+    /* PDF 출력 직전: 모든 details 강제 펼침 (원래 상태 저장 후 복원) */
+    const detailsList = [...target.querySelectorAll('details')];
+    const wasOpen = detailsList.map(d => d.open);
+    detailsList.forEach(d => { d.open = true; });
+
+    await Promise.all([...target.querySelectorAll('img')].map(img => (
+      img.complete ? Promise.resolve() : new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      })
+    )));
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const opt = {
+      margin:8,
+      filename:`달란트로드_결과_${Date.now()}.pdf`,
+      image:{type:'jpeg',quality:0.98},
+      html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+      pagebreak:{mode:['avoid-all','css','legacy']}
+    };
+    try {
+      await html2pdf().from(target).set(opt).save();
+    } finally {
+      target.classList.remove('pdf-export');
+      detailsList.forEach((d, i) => { d.open = wasOpen[i]; });
+    }
   });
 });
 
@@ -444,7 +3082,7 @@ function renderQuestion(){
     wrap.insertAdjacentHTML('beforeend', `
       <div class="choice">
         <input class="peer hidden" type="radio" id="${id}" name="q${i}" value="${val}" ${checked}/>
-        <label for="${id}" class="block rounded-xl border border-slate-300 p-3 cursor-pointer peer-checked:border-violet-700 transition duration-150">
+        <label for="${id}" class="block rounded-xl p-3 cursor-pointer transition duration-150">
           <span class="font-medium">${txt}</span>
         </label>
       </div>`);
@@ -458,7 +3096,6 @@ function renderQuestion(){
   document.querySelectorAll(`input[name="q${i}"]`).forEach(r=>{
     r.addEventListener('change', ()=>{
       state.answers[i] = Number(r.value);
-      saveState();
       toggleNextBtn(true);
     });
   });
@@ -490,7 +3127,7 @@ function calcScores(){
     const type = TYPES.find(t=>t.key===k);
     const avg = counts[k] ? sums[k]/counts[k] : 0;
     return { key:k, name:type.name, sum:sums[k], n:counts[k], avg, norm: Math.round((avg-1)/4*100) };
-  }).sort((a,b)=> (b.norm - a.norm) || (b.avg - a.avg));
+  }).sort((a,b)=>b.norm-a.norm);
 }
 
 /* ===== 조합키 정렬 & 이름 ===== */
@@ -507,35 +3144,98 @@ function renderResult(){
 
   const comboKey = toComboKey(top3[0].key, top3[1].key, top3[2].key);
   const combo = COMBO[comboKey] || {title:`${comboKey} 조합`, desc:'세 은사가 조화를 이루어 공동체에 독특한 기여를 기대할 수 있습니다.', examples:['조합에 대한 상세 설명이 준비되지 않았습니다.','다른 조합 결과는 연구 중입니다.','본 결과는 참고용이며, 다른 조합도 테스트해 보세요.','말씀과 기도로 분별하시길 권장합니다.',' ']} ;
+  const persona = PERSONAS[comboKey];
 
   const nameDisplay = state.name ? state.name + ' 님' : '응답자 님';
   $('#result-sub-info').innerHTML = `${nameDisplay} (${state.gender}, ${state.age})`;
 
-  const examplesList = combo.examples.map(ex => `<li class="mt-2 text-slate-700">${ex}</li>`).join('');
+  const ext = (typeof EXTENDED !== 'undefined' && EXTENDED[comboKey]) ? EXTENDED[comboKey] : null;
+
+  const ministryItems = (ext && ext.ministry && ext.ministry.length) ? ext.ministry : combo.examples;
+  const examplesList = ministryItems.map(ex => `<li class="mt-2">${ex}</li>`).join('');
+
+  const personaBlock = persona ? `
+    <section class="persona-card">
+      <div>
+        <div class="persona-label">BIBLICAL PERSONA</div>
+        <h5 class="persona-name">${persona.person}</h5>
+        <div class="persona-verse">${persona.verse}</div>
+        <p class="persona-summary">${persona.summary}</p>
+      </div>
+      <img class="persona-image" src="${persona.image}" alt="${persona.person} 성경 인물 이미지" loading="eager" />
+    </section>
+  ` : '';
+
+  const callingBlock = (ext && ext.calling) ? `
+    <section class="ext-calling">
+      <div class="ext-label">💡 CALLING MESSAGE</div>
+      <p class="ext-calling-text">“${ext.calling}”</p>
+    </section>` : '';
+
+  const verseBlock = (ext && ext.verseRef) ? `
+    <section class="ext-verse">
+      <div class="ext-label">📖 KEY VERSE</div>
+      <div class="ext-verse-ref">${ext.verseRef}</div>
+      ${ext.verseText ? `<p class="ext-verse-text">“${ext.verseText}”</p>` : ''}
+    </section>` : '';
+
+  const roleBlock = (ext && ext.role) ? `
+    <section class="ext-role">
+      <div class="ext-label">🎯 핵심 역할</div>
+      <p class="ext-role-text">${ext.role}</p>
+    </section>` : '';
+
+  const summaryBlock = (ext && ext.summary && ext.summary.length) ? `
+    <details class="ext-details">
+      <summary><span class="ext-summary-icon">✨</span> 요약 설명 <span class="ext-count">(${ext.summary.length}줄)</span></summary>
+      <ul class="ext-list">${ext.summary.map(s => `<li>${s}</li>`).join('')}</ul>
+    </details>` : '';
+
+  const jobsBlock = (ext && ext.jobs && ext.jobs.length) ? `
+    <details class="ext-details">
+      <summary><span class="ext-summary-icon">💼</span> 직업 / 전문사역 TOP ${ext.jobs.length} <span class="ext-count">(접어두기 · 펼쳐 보기)</span></summary>
+      <ol class="ext-list ext-list-ol">${ext.jobs.map(j => `<li>${j}</li>`).join('')}</ol>
+    </details>` : '';
+
+  const hashtagsBlock = (ext && ext.hashtags && ext.hashtags.length) ? `
+    <div class="ext-hashtags">${ext.hashtags.map(h => `<span class="ext-hashtag">${h}</span>`).join('')}</div>` : '';
+
+  const areaBlock = (ext && ext.area) ? `
+    <div class="ext-area">은사영역 · ${ext.area}</div>` : '';
 
   $('#top3').innerHTML = `
-    <article class="rounded-xl border-4 border-violet-500 p-6 sm:p-8 bg-violet-50 shadow-lg text-center">
-      <div class="text-sm text-violet-600 font-bold mb-2 tracking-widest">
+    <article class="rounded-xl p-6 sm:p-8 shadow-lg text-center">
+      <div class="text-sm font-bold mb-2 tracking-widest" style="color:#67e8f9">
         MY TALENT ARCHETYPE (${top3[0].key}+${top3[1].key}+${top3[2].key} 조합)
       </div>
-      <h5 class="text-3xl sm:text-4xl font-extrabold text-violet-800">
+      <h5 class="text-3xl sm:text-4xl font-extrabold">
         ${combo.title}
       </h5>
-      <p class="mt-4 text-lg text-slate-700 leading-relaxed font-medium">
+      ${areaBlock}
+      <p class="mt-4 text-lg leading-relaxed font-medium">
         ${combo.desc}
       </p>
 
-      <div class="mt-6 pt-6 border-t border-violet-200 text-left">
-        <h5 class="text-xl font-bold mb-4 text-slate-800">
-          현실적인 교회 현장 사역 TOP 5
+      ${personaBlock}
+      ${callingBlock}
+      ${verseBlock}
+      ${roleBlock}
+
+      <div class="mt-6 pt-6 text-left" style="border-top:1px solid rgba(148,163,184,.18)">
+        <h5 class="text-xl font-bold mb-4">
+          ⛪ 현실적인 교회 현장 사역 TOP ${ministryItems.length}
         </h5>
         <ul class="list-decimal list-inside text-left space-y-2 pl-4">
           ${examplesList}
         </ul>
       </div>
 
-      <p class="mt-8 text-sm text-violet-700 font-semibold border-t pt-4">
-        **[신학적 권면]** 본 검사는 선생님께서 만드신 기독교교육학적 탐색 도구로서, 은사 조합은 사역의 **방향성을 제시**할 뿐입니다. 이 결과를 **말씀과 기도** 안에서 깊이 분별하고, **성령의 구체적인 부르심**을 따라 **목회적/신학적 지도**를 받아 사역의 확신을 세우시기를 권장합니다.
+      ${summaryBlock}
+      ${jobsBlock}
+      ${hashtagsBlock}
+
+      <p class="mt-8 text-sm font-semibold pt-4" style="border-top:1px solid rgba(148,163,184,.18); color:#f0bc78">
+        [신학적 권면] 본 검사는 선생님께서 만드신 기독교교육학적 탐색 도구로서, 은사 조합은 사역의 방향성을 제시할 뿐입니다. 이 결과를 말씀과 기도 안에서 깊이 분별하고, 성령의 구체적인 부르심을 따라 목회적/신학적 지도 안에서 사역의 확신을 세우시기를 권장합니다.
       </p>
 
     </article>
@@ -546,15 +3246,15 @@ function renderResult(){
     const rank = idx + 1;
     const isTop = rank <= 3;
     const badge = isTop
-      ? `<span class="ml-2 shrink-0 inline-flex items-center justify-center text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-semibold">TOP ${rank}</span>`
+      ? `<span class="score-badge ml-2 shrink-0 inline-flex items-center justify-center text-xs px-2 py-0.5 rounded-full font-semibold">TOP ${rank}</span>`
       : '';
-    const scoreColor = isTop ? 'text-violet-800 text-lg font-extrabold' : 'text-slate-700 font-semibold';
+    const scoreColor = isTop ? 'text-lg font-extrabold' : 'font-semibold';
 
     tbl.insertAdjacentHTML('beforeend',
-      `<div class="px-4 py-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between min-w-0 shadow-sm">
+      `<div class="px-4 py-3 rounded-xl flex items-center justify-between min-w-0">
          <span class="flex items-center whitespace-nowrap min-w-0">
-           <b class="shrink-0 text-violet-600">${s.key}</b><span class="mx-1 text-slate-400">|</span>
-           <span class="truncate text-slate-700 font-medium">${s.name}</span>${badge}
+           <b class="shrink-0">${s.key}</b><span class="mx-1 text-slate-500">|</span>
+           <span class="truncate font-medium">${s.name}</span>${badge}
          </span>
          <span class="${scoreColor} shrink-0 ml-3">${s.norm}</span>
        </div>`);
@@ -608,7 +3308,6 @@ async function next(){
         top: scores.slice(0,3).map(s=>({type:s.key, name:s.name, norm:s.norm}))
       };
       await saveToSheets(payload);
-      clearState();
       showResult();
     } catch (error) {
       console.error('제출 실패:', error);
@@ -620,10 +3319,11 @@ async function next(){
       submitBtn.classList.remove('btn-disabled');
     }
   } else {
-    state.i++; saveState(); renderQuestion();
+    state.i++; renderQuestion();
   }
 }
-function prev(){ if(submitting) return; if(state.i>0){ state.i--; saveState(); renderQuestion(); } }
+function prev(){ if(submitting) return; if(state.i>0){ state.i--; renderQuestion(); } }
 </script>
 </body>
 </html>
+
