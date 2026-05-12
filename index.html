@@ -8,11 +8,17 @@
 <link rel="icon" type="image/png" href="eum-logo.png"/>
 <link rel="apple-touch-icon" href="eum-logo.png"/>
 <meta property="og:type" content="website"/>
-<meta property="og:site_name" content="달란트로드"/>
-<meta property="og:title" content="달란트로드 — 나의 은사 찾기"/>
-<meta property="og:description" content="60문항으로 알아보는 56유형 은사·성향 검사. E:UM 패밀리 앱."/>
-<meta property="og:image" content="https://lgh5440.github.io/talentroad-test/eum-logo.png"/>
+<meta property="og:site_name" content="이음 달란트로드"/>
+<meta property="og:title" content="이음 달란트로드 — 나의 56유형 발견"/>
+<meta property="og:description" content="60문항으로 알아보는 56유형 은사·성향 검사. E:UM 패밀리 도구."/>
+<meta property="og:image" content="https://lgh5440.github.io/talentroad-test/og.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
 <meta property="og:url" content="https://lgh5440.github.io/talentroad-test/"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="이음 달란트로드 — 나의 56유형 발견"/>
+<meta name="twitter:description" content="60문항으로 알아보는 56유형 은사·성향 검사. E:UM 패밀리 도구."/>
+<meta name="twitter:image" content="https://lgh5440.github.io/talentroad-test/og.png"/>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
@@ -743,12 +749,14 @@
 /* ===== 헬퍼 ===== */
 const $ = (s)=>document.querySelector(s);
 
-/* ===== 이음 패밀리 — 3개 앱 공통 광고 ===== */
+/* ===== 이음 패밀리 — 자동 생성 (master: _eum-family/shared/eumFamily.json) ===== */
+// eum-family:auto-start
 const EUM_FAMILY = [
-  { key:'talentroad', name:'달란트로드',   tagline:'나의 은사 찾기 · 56유형 검사',     emoji:'🗺️', url:'https://lgh5440.github.io/talentroad-test/', accent:'#fcd34d' },
-  { key:'myrealid',   name:'이음 캠프',     tagline:'수련회·모임 운영 도우미',                  emoji:'🏕️', url:'https://eum-camp-template.web.app/',         accent:'#a5b4fc' },
-  { key:'eumplay',    name:'이음 플레이',  tagline:'교회 활동 게임 9종 · 진행 도우미', emoji:'🎲', url:'https://lgh5440.github.io/eum-play/',       accent:'#34d399' },
+  { key:'talentroad', name:'달란트로드', tagline:'나의 은사 찾기 · 56유형 검사', emoji:'🗺️', url:'https://lgh5440.github.io/talentroad-test/', accent:'#fcd34d' },
+  { key:'myrealid', name:'이음 캠프', tagline:'수련회·모임 운영 도우미', emoji:'🏕️', url:'https://eum-camp-template.web.app/', accent:'#a5b4fc' },
+  { key:'eumplay', name:'이음 플레이', tagline:'교회 활동 게임 9종 · 진행 도우미', emoji:'🎲', url:'https://lgh5440.github.io/eum-play/', accent:'#34d399' },
 ];
+// eum-family:auto-end
 const EUM_CURRENT = 'talentroad';
 function buildEumFamilyUrl(target, source, medium){
   const u = new URL(target.url);
