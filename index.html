@@ -8,11 +8,17 @@
 <link rel="icon" type="image/png" href="eum-logo.png"/>
 <link rel="apple-touch-icon" href="eum-logo.png"/>
 <meta property="og:type" content="website"/>
-<meta property="og:site_name" content="달란트로드"/>
-<meta property="og:title" content="달란트로드 — 나의 은사 찾기"/>
-<meta property="og:description" content="60문항으로 알아보는 56유형 은사·성향 검사. E:UM 패밀리 앱."/>
-<meta property="og:image" content="https://lgh5440.github.io/talentroad-test/eum-logo.png"/>
+<meta property="og:site_name" content="이음 달란트로드"/>
+<meta property="og:title" content="이음 달란트로드 — 나의 56유형 발견"/>
+<meta property="og:description" content="60문항으로 알아보는 56유형 은사·성향 검사. E:UM 패밀리 도구."/>
+<meta property="og:image" content="https://lgh5440.github.io/talentroad-test/og.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
 <meta property="og:url" content="https://lgh5440.github.io/talentroad-test/"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="이음 달란트로드 — 나의 56유형 발견"/>
+<meta name="twitter:description" content="60문항으로 알아보는 56유형 은사·성향 검사. E:UM 패밀리 도구."/>
+<meta name="twitter:image" content="https://lgh5440.github.io/talentroad-test/og.png"/>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
@@ -737,18 +743,29 @@
 
   <!-- 이음 패밀리 본문 푸터 (모든 화면 하단) -->
   <section class="eum-family max-w-3xl mx-auto" data-eum-family data-variant="footer" aria-label="이음 패밀리 앱"></section>
+
+  <!-- 문의·오류 제보 (모든 화면 하단 공통) -->
+  <footer class="max-w-3xl mx-auto mt-6 mb-10 text-center text-sm text-slate-400">
+    오류 신고 · 문의 :
+    <a href="mailto:lgh544092@gmail.com?subject=%5B%EB%8B%AC%EB%9E%80%ED%8A%B8%EB%A1%9C%EB%93%9C%5D%20%EB%AC%B8%EC%9D%98%C2%B7%EC%98%A4%EB%A5%98%20%EC%A0%9C%EB%B3%B4"
+       class="underline decoration-dotted underline-offset-4 hover:text-cyan-300 transition">
+      lgh544092@gmail.com
+    </a>
+  </footer>
 </main>
 
 <script>
 /* ===== 헬퍼 ===== */
 const $ = (s)=>document.querySelector(s);
 
-/* ===== 이음 패밀리 — 3개 앱 공통 광고 ===== */
+/* ===== 이음 패밀리 — 자동 생성 (master: _eum-family/shared/eumFamily.json) ===== */
+// eum-family:auto-start
 const EUM_FAMILY = [
-  { key:'talentroad', name:'달란트로드',   tagline:'나의 은사 찾기 · 56유형 검사',     emoji:'🗺️', url:'https://lgh5440.github.io/talentroad-test/', accent:'#fcd34d' },
-  { key:'myrealid',   name:'이음 캠프',     tagline:'수련회·모임 운영 도우미',                  emoji:'🏕️', url:'https://eum-camp-template.web.app/',         accent:'#a5b4fc' },
-  { key:'eumplay',    name:'이음 플레이',  tagline:'교회 활동 게임 9종 · 진행 도우미', emoji:'🎲', url:'https://lgh5440.github.io/eum-play/',       accent:'#34d399' },
+  { key:'talentroad', name:'달란트로드', tagline:'나의 은사 찾기 · 56유형 검사', emoji:'🗺️', url:'https://lgh5440.github.io/talentroad-test/', accent:'#fcd34d' },
+  { key:'myrealid', name:'이음 캠프', tagline:'수련회·모임 운영 도우미', emoji:'🏕️', url:'https://eum-camp-template.web.app/', accent:'#a5b4fc' },
+  { key:'eumplay', name:'이음 플레이', tagline:'교회 활동 게임 9종 · 진행 도우미', emoji:'🎲', url:'https://lgh5440.github.io/eum-play/', accent:'#34d399' },
 ];
+// eum-family:auto-end
 const EUM_CURRENT = 'talentroad';
 function buildEumFamilyUrl(target, source, medium){
   const u = new URL(target.url);
@@ -3191,7 +3208,9 @@ function renderQuestion(){
   });
 
   const isLast = (i === QUESTIONS.length - 1);
-  $('#btn-next').textContent = isLast ? '제출' : '다음';
+  $('#btn-next').textContent = '제출';
+  // 1~59번: '다음' 버튼 숨김 (답 클릭 시 자동 진행) / 60번: '제출' 버튼 노출
+  $('#btn-next').classList.toggle('hidden', !isLast);
   $('#btn-prev').disabled = (i===0);
   toggleNextBtn(!!state.answers[i]);
 
@@ -3199,6 +3218,14 @@ function renderQuestion(){
     r.addEventListener('change', ()=>{
       state.answers[i] = Number(r.value);
       toggleNextBtn(true);
+      // 마지막 문항이 아니면 약 220ms 후 자동 진행
+      // (선택됨 시각 피드백을 잠깐 보여준 뒤 넘김)
+      if(!isLast){
+        setTimeout(()=>{
+          // 사용자가 그 사이 '이전' 버튼을 눌렀거나 제출 중이면 중단
+          if(state.i === i && !submitting) next();
+        }, 220);
+      }
     });
   });
 
