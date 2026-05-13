@@ -743,6 +743,15 @@
 
   <!-- 이음 패밀리 본문 푸터 (모든 화면 하단) -->
   <section class="eum-family max-w-3xl mx-auto" data-eum-family data-variant="footer" aria-label="이음 패밀리 앱"></section>
+
+  <!-- 문의·오류 제보 (모든 화면 하단 공통) -->
+  <footer class="max-w-3xl mx-auto mt-6 mb-10 text-center text-sm text-slate-400">
+    오류 신고 · 문의 :
+    <a href="mailto:lgh544092@gmail.com?subject=%5B%EB%8B%AC%EB%9E%80%ED%8A%B8%EB%A1%9C%EB%93%9C%5D%20%EB%AC%B8%EC%9D%98%C2%B7%EC%98%A4%EB%A5%98%20%EC%A0%9C%EB%B3%B4"
+       class="underline decoration-dotted underline-offset-4 hover:text-cyan-300 transition">
+      lgh544092@gmail.com
+    </a>
+  </footer>
 </main>
 
 <script>
@@ -3199,7 +3208,9 @@ function renderQuestion(){
   });
 
   const isLast = (i === QUESTIONS.length - 1);
-  $('#btn-next').textContent = isLast ? '제출' : '다음';
+  $('#btn-next').textContent = '제출';
+  // 1~59번: '다음' 버튼 숨김 (답 클릭 시 자동 진행) / 60번: '제출' 버튼 노출
+  $('#btn-next').classList.toggle('hidden', !isLast);
   $('#btn-prev').disabled = (i===0);
   toggleNextBtn(!!state.answers[i]);
 
@@ -3207,6 +3218,14 @@ function renderQuestion(){
     r.addEventListener('change', ()=>{
       state.answers[i] = Number(r.value);
       toggleNextBtn(true);
+      // 마지막 문항이 아니면 약 220ms 후 자동 진행
+      // (선택됨 시각 피드백을 잠깐 보여준 뒤 넘김)
+      if(!isLast){
+        setTimeout(()=>{
+          // 사용자가 그 사이 '이전' 버튼을 눌렀거나 제출 중이면 중단
+          if(state.i === i && !submitting) next();
+        }, 220);
+      }
     });
   });
 
