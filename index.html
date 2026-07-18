@@ -1,12 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>달란트로드</title>
 <meta name="description" content="달란트로드 — 나의 은사 찾기. 60문항 56유형 검사. E:UM 패밀리 앱."/>
-<link rel="icon" type="image/png" href="eum-logo.png"/>
-<link rel="apple-touch-icon" href="eum-logo.png"/>
+<link rel="icon" type="image/png" href="app-icon.png"/>
+<link rel="apple-touch-icon" href="app-icon.png"/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="이음 달란트로드"/>
 <meta property="og:title" content="이음 달란트로드 — 나의 56유형 발견"/>
@@ -21,6 +21,9 @@
 <meta name="twitter:image" content="https://lgh5440.github.io/talentroad-test/og.png"/>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+<!-- html2pdf.bundle.min.js는 html2canvas를 내부에서만 쓰고 전역(window.html2canvas)으로 노출하지 않음 —
+     "이미지로 저장" 기능이 직접 캡처에 쓰므로 별도로 로드한다. -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root{
@@ -38,7 +41,7 @@
     --eum-blue:#2563eb;
     --eum-violet:#8b5cf6;
     --eum-gold:#f0bc78;
-    --eum-orange:#f08c28;
+    --eum-orange:#c9962b;
     --eum-danger:#fb7185;
   }
   html, body, #result-card, #result-card *{
@@ -331,9 +334,69 @@
   }
   /* PDF 출력 시 인터랙티브 요소 숨김 */
   #result-card.pdf-export #btn-download,
+  #result-card.pdf-export #btn-share,
+  #result-card.pdf-export #btn-image,
   #result-card.pdf-export #btn-retry,
   #result-card.pdf-export .ext-details > summary::after{
     display:none !important;
+  }
+  /* ===== 공유 / 이미지 저장 버튼 (브랜드 토큰: gold #C9962B / navy #1B3A5C / cream #FFF8EC) ===== */
+  #btn-share{
+    background:#C9962B;
+    color:#020818;
+    border:1px solid #C9962B;
+    box-shadow:0 4px 12px rgba(201,150,43,.28);
+  }
+  #btn-share:hover:not(:disabled){
+    background:#F0BC78;
+    border-color:#F0BC78;
+  }
+  #btn-share:disabled{
+    opacity:.55;
+    cursor:wait;
+  }
+  #btn-image{
+    background:#1B3A5C;
+    color:#FFF8EC;
+    border:1px solid #1B3A5C;
+  }
+  #btn-image:hover:not(:disabled){
+    background:#2a5080;
+    border-color:#2a5080;
+  }
+  #btn-image:disabled{
+    opacity:.55;
+    cursor:wait;
+  }
+  #btn-share:focus-visible,
+  #btn-image:focus-visible{
+    outline:3px solid #F0BC78;
+    outline-offset:2px;
+  }
+  /* 토스트 메시지 (공유·이미지 결과 안내) */
+  .toast-eum{
+    position:fixed;
+    left:50%;
+    bottom:32px;
+    transform:translateX(-50%);
+    background:#1B3A5C;
+    color:#FFF8EC;
+    padding:14px 22px;
+    border-radius:12px;
+    font-weight:600;
+    font-size:15px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+    z-index:9999;
+    border:1px solid #C9962B;
+    max-width:90vw;
+    text-align:center;
+    transition:opacity .3s ease;
+  }
+  .toast-eum.toast-error{
+    border-color:#ef4444;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .toast-eum{ transition:none; }
   }
   #result-card.pdf-export .ext-details > summary{
     cursor:default !important;
@@ -456,7 +519,7 @@
   }
 
   /* PDF 출력 시 EXTENDED 영역 라이트 모드 */
-  #result-card.pdf-export .ext-area{color:#a16207 !important}
+  #result-card.pdf-export .ext-area{color:#8A6D1F !important}
   #result-card.pdf-export .ext-label{color:#0369a1 !important}
   #result-card.pdf-export .ext-calling,
   #result-card.pdf-export .ext-verse,
@@ -567,13 +630,19 @@
   }
   .eum-family-title{
     font-weight:900; font-size:15px; margin-bottom:4px;
-    background:linear-gradient(135deg,#fef3c7 0%,#fcd34d 50%,#a16207 100%);
+    background:linear-gradient(135deg,#fef3c7 0%,#C9962B 50%,#8A6D1F 100%);
     -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
   }
   .eum-family-sub{ font-size:12px; color:rgba(255,255,255,.7); margin-bottom:12px; line-height:1.55; }
   .eum-family-grid{ display:grid; gap:8px; }
+  .eum-family-grid.cols-5{ grid-template-columns:repeat(5,1fr); }
+  .eum-family-grid.cols-4{ grid-template-columns:repeat(4,1fr); }
   .eum-family-grid.cols-3{ grid-template-columns:repeat(3,1fr); }
   .eum-family-grid.cols-2{ grid-template-columns:repeat(2,1fr); }
+  @media (max-width: 640px){
+    .eum-family-grid.cols-5,
+    .eum-family-grid.cols-4{ grid-template-columns:repeat(2,1fr); }
+  }
   .eum-family-card{
     display:flex; flex-direction:column; align-items:center; text-align:center;
     padding:10px 8px; border-radius:12px; text-decoration:none;
@@ -582,11 +651,27 @@
   .eum-family-card:hover{ transform:scale(1.03); }
   .eum-family-card:active{ transform:scale(.96); }
   .eum-family-card.is-current{ opacity:.45; cursor:default; }
+  .eum-family-card.is-coming-soon{ opacity:.55; cursor:not-allowed; }
+  .eum-family-card.is-coming-soon:hover{ transform:none; }
   .eum-family-emoji{ font-size:28px; margin-bottom:4px; line-height:1; font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",emoji; }
   .eum-family-name{ font-weight:900; font-size:12px; color:#fff; line-height:1.2; }
   .eum-family-tag{ font-size:10.5px; color:rgba(255,255,255,.7); margin-top:4px; line-height:1.35; }
   .eum-family-card.is-current .eum-family-name{ color:rgba(255,255,255,.6); }
   .eum-family-card.is-current .eum-family-tag{ color:rgba(255,255,255,.4); }
+  .eum-family-card.is-coming-soon .eum-family-name{ color:rgba(255,255,255,.75); }
+  .eum-family-card.is-coming-soon .eum-family-tag{ color:rgba(255,255,255,.5); }
+  .eum-family-coming-badge{
+    display:inline-block;
+    margin-top:6px;
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:700;
+    background:rgba(201,150,43,.18);
+    color:#F0BC78;
+    border:1px solid rgba(201,150,43,.4);
+    letter-spacing:.2px;
+  }
   .eum-family-current-badge{
     margin-top:6px; padding:2px 8px; border-radius:999px;
     background:rgba(255,255,255,.08); color:rgba(255,255,255,.6);
@@ -668,11 +753,12 @@
       <div class="rounded-xl p-4 shadow-sm" style="border:1px solid rgba(34,211,238,.2); background:rgba(34,211,238,.07)">
         <p class="text-sm text-slate-300 leading-6">
           본 검사는 은사·성향 탐색을 위한 참고용입니다. 결과는 신학적 판단과 목회적 상담을 대체하지 않습니다.
-          연구·서비스 개선을 위해 익명 통계로 활용될 수 있으며, 개인 식별 정보는 수집하지 않습니다.
+          검사 결과 통계분석과 도구 개선을 위해 이름(선택), 성별, 연령대, 지역(선택), 60개 답변, 문항별 반응시간, 영역별 점수와 상위 유형, 제출 시각을 보관합니다.
+          삭제 요청은 이름과 제출 시각을 적어 lgh544092@gmail.com 으로 보내주세요.
         </p>
         <label class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-300 cursor-pointer">
           <input id="consent" type="checkbox" class="h-4 w-4 text-violet-600 border-gray-300 rounded focus:ring-violet-500">
-          <span>위 내용을 이해하고 동의합니다.</span>
+          <span>수집 항목, 보관 목적, 삭제 요청 방법을 이해하고 동의합니다.</span>
         </label>
       </div>
 
@@ -716,10 +802,20 @@
           <p id="result-sub-info" class="text-base text-slate-300 font-medium">
             </p>
         </div>
-        <button id="btn-download" type="button" class="px-4 py-2 rounded-lg font-medium transition duration-150">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586l1.293-1.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v7a1 1 0 11-2 0V3a1 1 0 011-1z" clip-rule="evenodd"/></svg>
-          PDF 저장
-        </button>
+        <div class="flex flex-wrap gap-2">
+          <button id="btn-share" type="button" class="px-4 py-2 rounded-lg font-bold transition duration-150" aria-label="결과 친구한테 공유하기">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/></svg>
+            친구한테 공유
+          </button>
+          <button id="btn-image" type="button" class="px-4 py-2 rounded-lg font-medium transition duration-150" aria-label="결과 이미지로 저장">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>
+            이미지로 저장
+          </button>
+          <button id="btn-download" type="button" class="px-4 py-2 rounded-lg font-medium transition duration-150" aria-label="결과 PDF로 저장">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586l1.293-1.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v7a1 1 0 11-2 0V3a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+            PDF 저장
+          </button>
+        </div>
       </div>
 
       <div id="top3" class="mt-4"></div>
@@ -729,9 +825,6 @@
           </div>
       </div>
 
-
-      <!-- 이음 패밀리 결과 화면 CTA -->
-      <section class="eum-family" data-eum-family data-variant="cta" aria-label="이음 패밀리 다른 앱"></section>
 
       <div class="mt-6 flex justify-center gap-3">
         <button id="btn-retry" type="button" class="px-5 py-3 rounded-xl font-medium transition duration-150">
@@ -757,13 +850,40 @@
 <script>
 /* ===== 헬퍼 ===== */
 const $ = (s)=>document.querySelector(s);
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[ch]));
+}
+function allowComboHighlightHtml(value){
+  return escapeHtml(value).replace(
+    /&lt;span class=&#39;combo-key-highlight&#39;&gt;([CLMSWTPR])&lt;\/span&gt;/g,
+    "<span class='combo-key-highlight'>$1</span>"
+  );
+}
+function showToast(msg, type){
+  const t = document.createElement('div');
+  t.className = 'toast-eum' + (type === 'error' ? ' toast-error' : '');
+  t.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  t.setAttribute('aria-live', 'polite');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity = '0'; }, 2200);
+  setTimeout(()=>{ t.remove(); }, 2700);
+}
 
 /* ===== 이음 패밀리 — 자동 생성 (master: _eum-family/shared/eumFamily.json) ===== */
 // eum-family:auto-start
 const EUM_FAMILY = [
-  { key:'talentroad', name:'달란트로드', tagline:'나의 은사 찾기 · 56유형 검사', emoji:'🗺️', url:'https://lgh5440.github.io/talentroad-test/', accent:'#fcd34d' },
+  { key:'talentroad', name:'달란트로드', tagline:'나의 은사 찾기 · 56유형 검사', emoji:'🗺️', url:'https://lgh5440.github.io/talentroad-test/', accent:'#C9962B' },
   { key:'myrealid', name:'이음 캠프', tagline:'수련회·모임 운영 도우미', emoji:'🏕️', url:'https://eum-camp-template.web.app/', accent:'#a5b4fc' },
   { key:'eumplay', name:'이음 플레이', tagline:'교회 활동 게임 9종 · 진행 도우미', emoji:'🎲', url:'https://lgh5440.github.io/eum-play/', accent:'#34d399' },
+  { key:'eumschool', name:'이음 스쿨', tagline:'교회학교 통합 양육 (준비 중)', emoji:'📚', url:'', accent:'#06b6d4', status:'coming-soon' },
+  { key:'eumphoto', name:'이음 포토', tagline:'사진 정리 데스크톱 앱 (준비 중)', emoji:'📷', url:'', accent:'#f43f5e', status:'coming-soon' },
 ];
 // eum-family:auto-end
 const EUM_CURRENT = 'talentroad';
@@ -784,24 +904,39 @@ function renderEumFamily(){
       : '하나님과 사람을, 사람과 사람을 잇다 — E:UM';
     const cardsHtml = items.map(app => {
       const isCurrent = app.key === EUM_CURRENT;
+      const isComingSoon = app.status === 'coming-soon' || !app.url;
       const bg = isCurrent
         ? 'rgba(255,255,255,0.04)'
-        : `linear-gradient(140deg, rgba(255,255,255,0.06), ${app.accent}1f)`;
-      const border = isCurrent ? 'rgba(255,255,255,0.08)' : `${app.accent}55`;
+        : isComingSoon
+          ? 'rgba(255,255,255,0.03)'
+          : `linear-gradient(140deg, rgba(255,255,255,0.06), ${app.accent}1f)`;
+      const border = isCurrent
+        ? 'rgba(255,255,255,0.08)'
+        : isComingSoon
+          ? 'rgba(255,255,255,0.1)'
+          : `${app.accent}55`;
+      const badge = isCurrent
+        ? '<span class="eum-family-current-badge">현재 앱</span>'
+        : isComingSoon
+          ? '<span class="eum-family-coming-badge">준비 중</span>'
+          : '';
       const inner = `
-        <span class="eum-family-emoji" aria-hidden="true">${app.emoji}</span>
-        <p class="eum-family-name">${app.name}</p>
-        <p class="eum-family-tag">${app.tagline}</p>
-        ${isCurrent ? '<span class="eum-family-current-badge">현재 앱</span>' : ''}
+        <span class="eum-family-emoji" aria-hidden="true">${escapeHtml(app.emoji)}</span>
+        <p class="eum-family-name">${escapeHtml(app.name)}</p>
+        <p class="eum-family-tag">${escapeHtml(app.tagline)}</p>
+        ${badge}
       `;
       if (isCurrent) {
         return `<div class="eum-family-card is-current" style="background:${bg};border:1px solid ${border}" aria-current="page">${inner}</div>`;
       }
+      if (isComingSoon) {
+        return `<div class="eum-family-card is-coming-soon" style="background:${bg};border:1px solid ${border}" role="img" aria-label="${escapeHtml(app.name)} — 준비 중">${inner}</div>`;
+      }
       const href = buildEumFamilyUrl(app, EUM_CURRENT, variant);
-      return `<a class="eum-family-card" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="${app.name} 열기 — ${app.tagline}" style="background:${bg};border:1px solid ${border}">${inner}</a>`;
+      return `<a class="eum-family-card" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(app.name)} 열기 — ${escapeHtml(app.tagline)}" style="background:${bg};border:1px solid ${border}">${inner}</a>`;
     }).join('');
     box.innerHTML = `
-      <header><h3 class="eum-family-title">${heading}</h3><p class="eum-family-sub">${sub}</p></header>
+      <header><h3 class="eum-family-title">${escapeHtml(heading)}</h3><p class="eum-family-sub">${escapeHtml(sub)}</p></header>
       <div class="eum-family-grid cols-${items.length}">${cardsHtml}</div>
     `;
   });
@@ -3173,6 +3308,133 @@ document.addEventListener('DOMContentLoaded', ()=>{
       detailsList.forEach((d, i) => { d.open = wasOpen[i]; });
     }
   });
+
+  /* ===== 결과 공유 / 이미지 저장 ===== */
+  const SHARE_URL = 'https://lgh5440.github.io/talentroad-test/';
+  const SHARE_TITLE = '달란트로드 — 56유형 자기발견 검사';
+
+  function getShareText(){
+    /* 결과 카드 안의 조합 타이틀을 캡션에 포함 */
+    const top3 = $('#top3');
+    let comboTitle = '';
+    if(top3){
+      const candidate = top3.querySelector('h3, h4, .combo-title, [data-combo-title]');
+      if(candidate) comboTitle = candidate.textContent.trim();
+    }
+    return comboTitle
+      ? `나의 달란트 조합은 "${comboTitle}"\nMBTI보다 깊은 56유형 자기발견 검사\n무료 검사 ↓\n${SHARE_URL}`
+      : `MBTI보다 깊은 56유형 자기발견 검사 받아봤어!\n무료 검사 ↓\n${SHARE_URL}`;
+  }
+
+  async function captureResultCanvas(){
+    /* 결과 카드를 html2canvas로 캡처. PDF 출력 흐름과 동일하게 details 펼침. */
+    if(typeof html2canvas !== 'function'){
+      throw new Error('html2canvas 라이브러리를 불러오지 못했어요.');
+    }
+    const target = $('#result-card');
+    target.classList.add('pdf-export');
+    const detailsList = [...target.querySelectorAll('details')];
+    const wasOpen = detailsList.map(d => d.open);
+    detailsList.forEach(d => { d.open = true; });
+
+    await Promise.all([...target.querySelectorAll('img')].map(img => (
+      img.complete ? Promise.resolve() : new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      })
+    )));
+    await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+    try{
+      return await html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+    } finally {
+      target.classList.remove('pdf-export');
+      detailsList.forEach((d, i) => { d.open = wasOpen[i]; });
+    }
+  }
+
+  function canvasToBlob(canvas){
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('이미지 변환 실패')), 'image/png', 0.95);
+    });
+  }
+
+  $('#btn-share').addEventListener('click', async ()=>{
+    const btn = $('#btn-share');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = '준비 중…';
+
+    const text = getShareText();
+
+    /* 1순위: Web Share API + 이미지 (모바일) */
+    if(navigator.share){
+      try{
+        let shareData = { title: SHARE_TITLE, text, url: SHARE_URL };
+        try{
+          const canvas = await captureResultCanvas();
+          const blob = await canvasToBlob(canvas);
+          const file = new File([blob], '달란트로드_결과.png', { type: 'image/png' });
+          if(navigator.canShare && navigator.canShare({ files: [file] })){
+            shareData = { title: SHARE_TITLE, text, files: [file] };
+          }
+        } catch(_){ /* 이미지 캡처 실패 시 텍스트만 공유 */ }
+
+        await navigator.share(shareData);
+        btn.disabled = false;
+        btn.innerHTML = original;
+        return;
+      } catch(e){
+        if(e && e.name === 'AbortError'){
+          btn.disabled = false;
+          btn.innerHTML = original;
+          return;
+        }
+        /* 그 외 오류는 클립보드 fallback */
+      }
+    }
+
+    /* 2순위: 클립보드 복사 (데스크톱·미지원 환경) */
+    try{
+      await navigator.clipboard.writeText(text);
+      showToast('공유 문구를 복사했어요. 카톡·인스타에 붙여 넣으세요.');
+    } catch(e){
+      showToast('복사가 안 됐어요. 주소창 링크를 직접 복사해 주세요.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  });
+
+  $('#btn-image').addEventListener('click', async ()=>{
+    const btn = $('#btn-image');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = '이미지 만드는 중…';
+
+    try{
+      const canvas = await captureResultCanvas();
+      const blob = await canvasToBlob(canvas);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `달란트로드_결과_${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=> URL.revokeObjectURL(url), 1000);
+      showToast('이미지를 저장했어요. 인스타·카톡에 올려보세요!');
+    } catch(e){
+      showToast('이미지 저장에 실패했어요. 잠시 후 다시 시도해 주세요.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  });
 });
 
 /* ===== 화면 전환 ===== */
@@ -3276,73 +3538,73 @@ function renderResult(){
   const persona = PERSONAS[comboKey];
 
   const nameDisplay = state.name ? state.name + ' 님' : '응답자 님';
-  $('#result-sub-info').innerHTML = `${nameDisplay} (${state.gender}, ${state.age})`;
+  $('#result-sub-info').textContent = `${nameDisplay} (${state.gender}, ${state.age})`;
 
   const ext = (typeof EXTENDED !== 'undefined' && EXTENDED[comboKey]) ? EXTENDED[comboKey] : null;
 
   const ministryItems = (ext && ext.ministry && ext.ministry.length) ? ext.ministry : combo.examples;
-  const examplesList = ministryItems.map(ex => `<li class="mt-2">${ex}</li>`).join('');
+  const examplesList = ministryItems.map(ex => `<li class="mt-2">${escapeHtml(ex)}</li>`).join('');
 
   const personaBlock = persona ? `
     <section class="persona-card">
       <div>
         <div class="persona-label">BIBLICAL PERSONA</div>
-        <h5 class="persona-name">${persona.person}</h5>
-        <div class="persona-verse">${persona.verse}</div>
-        <p class="persona-summary">${persona.summary}</p>
+        <h5 class="persona-name">${escapeHtml(persona.person)}</h5>
+        <div class="persona-verse">${escapeHtml(persona.verse)}</div>
+        <p class="persona-summary">${escapeHtml(persona.summary)}</p>
       </div>
-      <img class="persona-image" src="${persona.image}" alt="${persona.person} 성경 인물 이미지" loading="eager" />
+      <img class="persona-image" src="${escapeHtml(persona.image)}" alt="${escapeHtml(persona.person)} 성경 인물 이미지" loading="eager" />
     </section>
   ` : '';
 
   const callingBlock = (ext && ext.calling) ? `
     <section class="ext-calling">
       <div class="ext-label">💡 CALLING MESSAGE</div>
-      <p class="ext-calling-text">“${ext.calling}”</p>
+      <p class="ext-calling-text">“${escapeHtml(ext.calling)}”</p>
     </section>` : '';
 
   const verseBlock = (ext && ext.verseRef) ? `
     <section class="ext-verse">
       <div class="ext-label">📖 KEY VERSE</div>
-      <div class="ext-verse-ref">${ext.verseRef}</div>
-      ${ext.verseText ? `<p class="ext-verse-text">“${ext.verseText}”</p>` : ''}
+      <div class="ext-verse-ref">${escapeHtml(ext.verseRef)}</div>
+      ${ext.verseText ? `<p class="ext-verse-text">“${escapeHtml(ext.verseText)}”</p>` : ''}
     </section>` : '';
 
   const roleBlock = (ext && ext.role) ? `
     <section class="ext-role">
       <div class="ext-label">🎯 핵심 역할</div>
-      <p class="ext-role-text">${ext.role}</p>
+      <p class="ext-role-text">${escapeHtml(ext.role)}</p>
     </section>` : '';
 
   const summaryBlock = (ext && ext.summary && ext.summary.length) ? `
     <details class="ext-details">
       <summary><span class="ext-summary-icon">✨</span> 요약 설명 <span class="ext-count">(${ext.summary.length}줄)</span></summary>
-      <ul class="ext-list">${ext.summary.map(s => `<li>${s}</li>`).join('')}</ul>
+      <ul class="ext-list">${ext.summary.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ul>
     </details>` : '';
 
   const jobsBlock = (ext && ext.jobs && ext.jobs.length) ? `
     <details class="ext-details">
       <summary><span class="ext-summary-icon">💼</span> 직업 / 전문사역 TOP ${ext.jobs.length} <span class="ext-count">(접어두기 · 펼쳐 보기)</span></summary>
-      <ol class="ext-list ext-list-ol">${ext.jobs.map(j => `<li>${j}</li>`).join('')}</ol>
+      <ol class="ext-list ext-list-ol">${ext.jobs.map(j => `<li>${escapeHtml(j)}</li>`).join('')}</ol>
     </details>` : '';
 
   const hashtagsBlock = (ext && ext.hashtags && ext.hashtags.length) ? `
-    <div class="ext-hashtags">${ext.hashtags.map(h => `<span class="ext-hashtag">${h}</span>`).join('')}</div>` : '';
+    <div class="ext-hashtags">${ext.hashtags.map(h => `<span class="ext-hashtag">${escapeHtml(h)}</span>`).join('')}</div>` : '';
 
   const areaBlock = (ext && ext.area) ? `
-    <div class="ext-area">은사영역 · ${ext.area}</div>` : '';
+    <div class="ext-area">은사영역 · ${escapeHtml(ext.area)}</div>` : '';
 
   $('#top3').innerHTML = `
     <article class="rounded-xl p-6 sm:p-8 shadow-lg text-center">
       <div class="text-sm font-bold mb-2 tracking-widest" style="color:#67e8f9">
-        MY TALENT ARCHETYPE (${top3[0].key}+${top3[1].key}+${top3[2].key} 조합)
+        MY TALENT ARCHETYPE (${escapeHtml(top3[0].key)}+${escapeHtml(top3[1].key)}+${escapeHtml(top3[2].key)} 조합)
       </div>
-      <h5 class="text-3xl sm:text-4xl font-extrabold">
-        ${combo.title}
+      <h5 class="text-3xl sm:text-4xl font-extrabold" data-combo-title>
+        ${escapeHtml(combo.title)}
       </h5>
       ${areaBlock}
       <p class="mt-4 text-lg leading-relaxed font-medium">
-        ${combo.desc}
+        ${allowComboHighlightHtml(combo.desc)}
       </p>
 
       ${personaBlock}
@@ -3382,24 +3644,39 @@ function renderResult(){
     tbl.insertAdjacentHTML('beforeend',
       `<div class="px-4 py-3 rounded-xl flex items-center justify-between min-w-0">
          <span class="flex items-center whitespace-nowrap min-w-0">
-           <b class="shrink-0">${s.key}</b><span class="mx-1 text-slate-500">|</span>
-           <span class="truncate font-medium">${s.name}</span>${badge}
+           <b class="shrink-0">${escapeHtml(s.key)}</b><span class="mx-1 text-slate-500">|</span>
+           <span class="truncate font-medium">${escapeHtml(s.name)}</span>${badge}
          </span>
-         <span class="${scoreColor} shrink-0 ml-3">${s.norm}</span>
+         <span class="${scoreColor} shrink-0 ml-3">${escapeHtml(s.norm)}</span>
        </div>`);
   });
 }
 
 /* ===== 데이터 저장 ===== */
 async function saveToSheets(payload){
-  try{
-    await fetch(WEB_APP_URL, {
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-  }catch(e){ console.error('시트 저장 실패:', e); }
+  const response = await fetch(WEB_APP_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  });
+
+  const responseText = await response.text();
+  let result = null;
+  if(responseText){
+    try{
+      result = JSON.parse(responseText);
+    }catch(e){
+      result = { ok: true, raw: responseText };
+    }
+  }
+
+  if(!response.ok){
+    throw new Error(`저장 서버 응답 오류 (${response.status})`);
+  }
+  if(result && result.ok === false){
+    throw new Error(result.message || '저장 서버가 실패를 반환했습니다.');
+  }
+  return result || { ok: true };
 }
 
 /* ===== 네비게이션 ===== */
@@ -3437,10 +3714,13 @@ async function next(){
         top: scores.slice(0,3).map(s=>({type:s.key, name:s.name, norm:s.norm}))
       };
       await saveToSheets(payload);
+      showToast('검사 결과가 저장됐어요.');
       showResult();
     } catch (error) {
       console.error('제출 실패:', error);
-      alert('제출 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      const message = error && error.message ? error.message : '알 수 없는 오류';
+      showToast('저장에 실패했어요. 다시 시도해 주세요.', 'error');
+      alert(`저장에 실패했습니다.\n${message}\n\n인터넷 연결 또는 저장 서버 설정을 확인한 뒤 다시 제출해 주세요.`);
       // 오류 시 UI 복원
       submitting = false;
       lockNav(false);
