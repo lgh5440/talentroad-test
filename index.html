@@ -341,6 +341,17 @@
     color:#0369a1 !important;
     border:1px solid #bae6fd;
   }
+  /* ★2026-08-26 한글 깨짐(받침 소실) 원인 발견 — html2canvas@1.4.1이 text-overflow:ellipsis
+     요소를 만나면 글자 단위로 그리는 대체 경로를 타는데, 이 경로가 한글 조합 글자에서 버그를
+     일으켜 받침이 사라진다. 더 나쁜 건 이 손상이 같은 캡처 안의 다른(무관한) 텍스트로도
+     번진다는 것 — 실측: .truncate 를 가진 점수표만 있어도 앞쪽 persona-verse("렘 1장")까지
+     "웹 1장"으로 깨졌고, 캡처 시에만 ellipsis를 무력화하니 둘 다 정상화됐다(백업본/현재본
+     교차검증, scale 1·2 무관 재현). 화면에서는 그대로 말줄임표를 쓰되 캡처 순간만 해제한다. */
+  #result-card.pdf-export .truncate{
+    overflow:visible !important;
+    text-overflow:clip !important;
+    white-space:normal !important;
+  }
   /* PDF 출력 시 인터랙티브 요소 숨김 */
   #result-card.pdf-export #btn-download,
   #result-card.pdf-export #btn-share,
@@ -348,6 +359,17 @@
   #result-card.pdf-export #btn-retry,
   #result-card.pdf-export .ext-details > summary::after{
     display:none !important;
+    box-shadow:none !important;
+  }
+  /* ★2026-08-26 캡처(이미지·PDF·공유) 실패 원인 발견 — 레이더와 무관, 밝은 테마의 color-mix()가
+     크로미움에서 box-shadow 계산값으로 color(srgb ...) 표기를 만드는데 html2canvas@1.4.1가
+     이 표기를 못 읽어 캡처 자체가 통째로 예외를 던진다. display:none인 요소도 html2canvas가
+     스타일을 훑다가 걸려 넘어진다 — 위에서 box-shadow:none 을 더했지만, 테마가 늘어나면서
+     또 새는 지점이 생길 수 있어 캡처 순간에는 전체를 한 번 더 막아둔다(라이브 화면 디자인은
+     그대로, .pdf-export 스코프 안에서만 적용). */
+  #result-card.pdf-export,
+  #result-card.pdf-export *{
+    box-shadow:none !important;
   }
   /* ===== 공유 / 이미지 저장 버튼 (브랜드 토큰: gold #C9962B / navy #1B3A5C / cream #FFF8EC) ===== */
   #btn-share{
@@ -924,11 +946,23 @@
 
       <div id="top3" class="mt-4"></div>
       <div class="mt-10">
-        <h4 class="text-xl font-bold mb-1 text-white">여덟 가지 은사, 그리고 나</h4>
-        <p class="text-sm text-slate-400 mb-4">
+        <h4 id="score-intro-title" class="text-xl font-bold mb-1 text-white">여덟 가지 은사, 그리고 나</h4>
+        <p id="score-intro-text" class="text-sm text-slate-400 mb-4">
           여덟 가지 모두 선생님 안에 있어요. 위 세 가지가 지금 특히 또렷하게 보이고,
           나머지는 없는 게 아니라 지금은 조금 덜 드러났을 뿐이에요.
         </p>
+        <div id="radar-wrap" class="flex flex-col items-center mb-4">
+          <div id="radar-chart" style="width:100%;max-width:320px"></div>
+          <details class="mt-2 text-xs" style="color:var(--eum-muted)">
+            <summary style="cursor:pointer">여덟 은사는 왜 이 순서로 놓았을까요?</summary>
+            <p class="mt-2 leading-relaxed" style="max-width:340px">
+              돌봄→섬김→리더십→창의→예배→기도→전도→가르침→(다시)돌봄, 서로 이어지는 흐름으로 배치했어요.
+              돌봄이 섬김의 손길이 되고, 섬김이 모이면 리더십이 되고, 리더십이 새로움을 낳으면 창의가 되고,
+              창의가 표현되면 예배가 되고, 예배의 뿌리는 기도이고, 기도는 전도로 향하고, 전도의 내용을
+              가르침이 전하고, 가르침은 다시 돌봄으로 이어져요.
+            </p>
+          </details>
+        </div>
         <div id="score-table" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           </div>
       </div>
@@ -974,6 +1008,69 @@
 <script>
 /* ===== 헬퍼 ===== */
 const $ = (s)=>document.querySelector(s);
+/* ★2026-08-26 연령대 말투 분기 — 10~19세는 청소년 말투, 그 외는 기존 말투 유지.
+   화면 공통 문구에만 적용한다(EXTENDED 56조합 결과 콘텐츠는 그대로). */
+function isYouthAge(age){ return age === '10~19세'; }
+
+/* ★2026-08-26 결과 레이더(시안A 통합, 오너 확정) — 8개 은사를 "가장 높은 은사=100" 자기
+   정규화(제로섬 아님)로 그려 낮게 답한 사람도 도형이 작아 보이지 않게 한다. 숫자·눈금 없음,
+   TOP3만 이름표. 8축 순서는 자의적이지 않고 순환 이야기로 정했다(화면 접기에 설명 있음).
+   html2canvas(이미지·PDF·공유 3버튼이 공통으로 씀)로 캡처될 것을 고려해 색은 CSS 변수가
+   아니라 리터럴 값을 SVG 속성에 직접 넣는다 — var(--x)는 캡처 시 깨질 위험이 있어서다. */
+const RADAR_ORDER = ['C','S','L','R','W','P','M','T'];
+const RADAR_SHORT_NAME = {C:'돌봄', S:'섬김', L:'리더십', R:'창의', W:'예배', P:'기도', M:'전도', T:'가르침'};
+
+function renderRadarChart(scores, top3Keys){
+  const raw = {};
+  RADAR_ORDER.forEach(k => raw[k] = scores[k] ?? 0);
+  const max = Math.max(...Object.values(raw), 1);
+  const norm = {};
+  RADAR_ORDER.forEach(k => norm[k] = (raw[k]/max)*100);
+
+  const size = 300, cx = size/2, cy = size/2, R = 105;
+  const n = RADAR_ORDER.length;
+  const angleFor = i => (Math.PI*2*i/n) - Math.PI/2;
+  const pt = (i, r) => {
+    const a = angleFor(i);
+    return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+  };
+
+  // width/height 속성을 명시한다(반응형 CSS만 믿지 않는다) — html2pdf가 캡처 직전 대상을
+  // 별도 컨테이너로 복제하는데, 그 과정에서 퍼센트 크기 SVG의 실제 렌더 크기를 잘못 재는
+  // 경우가 있어 도형(폴리곤/선)만 사라지고 큰 텍스트만 남는 문제가 있었다(2026-08-26 실측).
+  let svg = `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:320px;height:auto;display:block;margin:0 auto">`;
+  [0.33, 0.66, 1.0].forEach(f=>{
+    svg += `<circle cx="${cx}" cy="${cy}" r="${(R*f).toFixed(1)}" fill="none" stroke="#cbd5e1" stroke-width="1"/>`;
+  });
+  RADAR_ORDER.forEach((k,i)=>{
+    const [x,y] = pt(i, R);
+    svg += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e2e8f0" stroke-width="1"/>`;
+  });
+
+  const poly = RADAR_ORDER.map((k,i)=>{
+    const [x,y] = pt(i, R*norm[k]/100);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  svg += `<polygon points="${poly}" fill="rgba(37,99,235,.24)" stroke="#2563eb" stroke-width="2.5"/>`;
+
+  RADAR_ORDER.forEach((k,i)=>{
+    const [x,y] = pt(i, R*norm[k]/100);
+    const isTop = top3Keys.includes(k);
+    svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isTop?4:2.5}" fill="${isTop?'#9C6F0F':'#2563eb'}"/>`;
+  });
+
+  RADAR_ORDER.forEach((k,i)=>{
+    if(!top3Keys.includes(k)) return;
+    const [x,y] = pt(i, R + 20);
+    let anchor = 'middle';
+    if(x < cx - 10) anchor = 'end';
+    else if(x > cx + 10) anchor = 'start';
+    svg += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="15" font-weight="700" fill="#9C6F0F">${escapeHtml(RADAR_SHORT_NAME[k])}</text>`;
+  });
+
+  svg += `</svg>`;
+  return svg;
+}
 function escapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, ch => ({
     '&':'&amp;',
@@ -3429,6 +3526,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   $('#consent').addEventListener('change', checkConsent);
   $('#inp-gender').addEventListener('change', checkConsent);
   $('#inp-age').addEventListener('change', checkConsent);
+  $('#inp-age').addEventListener('change', ()=>{
+    $('#inp-name').placeholder = isYouthAge($('#inp-age').value) ? '이름을 알려줘요' : '선생님';
+  });
 
   $('#btn-start').addEventListener('click', ()=>{
     if($('#btn-start').classList.contains('btn-disabled')) return;
@@ -3747,6 +3847,18 @@ function renderResult(){
   const nameDisplay = state.name ? state.name + ' 님' : '응답자 님';
   $('#result-sub-info').textContent = `${nameDisplay} (${state.gender}, ${state.age})`;
 
+  // ★연령대 말투 분기(10~19세 vs 그 외) — 화면 공통 문구에만 적용, EXTENDED 콘텐츠는 그대로.
+  const youth = isYouthAge(state.age);
+  $('#score-intro-title').textContent = youth ? '여덟 개 은사, 그리고 나' : '여덟 가지 은사, 그리고 나';
+  $('#score-intro-text').textContent = youth
+    ? '여덟 개 다 네 안에 있어요. 위 세 개가 지금 또렷하게 보여요. 나머지도 없는 게 아니라 지금은 조금 덜 보일 뿐이에요.'
+    : '여덟 가지 모두 선생님 안에 있어요. 위 세 가지가 지금 특히 또렷하게 보이고, 나머지는 없는 게 아니라 지금은 조금 덜 드러났을 뿐이에요.';
+
+  // ★레이더(시안A, 오너 확정 통합) — 원점수(norm)를 그대로 넘기면 내부에서 최고값=100으로 재정규화한다.
+  const rawScoreMap = {}; scores.forEach(s => rawScoreMap[s.key] = s.norm);
+  const top3KeyList = top3.map(s => s.key);
+  $('#radar-chart').innerHTML = renderRadarChart(rawScoreMap, top3KeyList);
+
   const ext = (typeof EXTENDED !== 'undefined' && EXTENDED[comboKey]) ? EXTENDED[comboKey] : null;
 
   const ministryItems = (ext && ext.ministry && ext.ministry.length) ? ext.ministry : combo.examples;
@@ -3838,9 +3950,9 @@ function renderResult(){
       <div class="mt-8 rounded-xl p-4 sm:p-5 text-left" style="border:1px solid var(--eum-gold); background:var(--eum-pale)">
         <p class="text-sm font-bold mb-1" style="color:var(--eum-gold-deep)">🙏 결과보다 먼저 볼 것</p>
         <p class="text-sm font-medium leading-relaxed" style="color:var(--eum-navytx)">
-          이 결과는 참고용입니다. 은사 조합은 사역의 방향성을 제시할 뿐, 선생님을 규정하지 않습니다.
-          이 결과를 말씀과 기도 안에서 깊이 분별하고, 성령의 구체적인 부르심을 따라 목회적/신학적 지도 안에서
-          사역의 확신을 세우시기를 권장합니다.
+          ${youth
+            ? '이 결과는 참고용이에요. 이 세 가지가 너를 다 설명해 주진 않아요. 말씀과 기도로 한 번 더 생각해보고, 목사님이나 선생님과 이야기 나눠 봐요.'
+            : '이 결과는 참고용입니다. 은사 조합은 사역의 방향성을 제시할 뿐, 선생님을 규정하지 않습니다. 이 결과를 말씀과 기도 안에서 깊이 분별하고, 성령의 구체적인 부르심을 따라 목회적/신학적 지도 안에서 사역의 확신을 세우시기를 권장합니다.'}
         </p>
       </div>
 
@@ -3854,26 +3966,16 @@ function renderResult(){
     const badge = isTop
       ? `<span class="score-badge ml-2 shrink-0 inline-flex items-center justify-center text-xs px-2 py-0.5 rounded-full font-semibold">TOP ${rank}</span>`
       : '';
-    const scoreColor = isTop ? 'text-lg font-extrabold' : 'font-semibold';
-
-    // ★2026-08-26 정정: '상위 N%'·원점수 병기를 뺐다. master가 실제 화면에서 발견한 문제 —
-    // "상위 99%"가 한국어에서 "바닥"으로 읽혀 바로 위 "나머지는 없는 게 아니라 덜 드러났을
-    // 뿐"이라는 문구와 정면으로 충돌했고, 원점수(56 vs 61)가 정렬 순서와 어긋나 보여 "고장난
-    // 것처럼" 보였다. 숫자를 아예 빼고 결(성격)만 말로 표현한다 — TOP3는 "또렷하게 보여요",
-    // 나머지 5개는 등수를 알 수 없게 전부 동일한 문구로 통일한다(4등인지 8등인지 화면만
-    // 보고는 알 수 없어야 "덜 드러났을 뿐" 문구와 모순이 없다). pct/norm 계산 자체는 그대로
-    // 유지하고 TOP3 선정에만 쓴다 — 화면 노출만 없앤다.
-    const feel = isTop
-      ? `<span class="${scoreColor}">✨ 또렷하게 보여요</span>`
-      : `<span class="font-medium" style="color:var(--eum-muted)">🌱 여기 있어요</span>`;
+    // ★2026-08-26 레이더 통합(오너 확정)에 맞춰 목록을 다시 단순화한다. 예전 '상위 N%'는
+    // 서열처럼 읽혀서 뺐고, 그 자리를 메운 '또렷하게 보여요/여기 있어요' 문구는 오너가
+    // "무슨 뜻인지 이해가 잘 안 된다"고 지적했다 — 정보를 못 주는 문구였다는 뜻이다.
+    // 이제 레이더가 "어느 것이 또렷하고 어느 것이 덜 드러나는지"를 도형으로 보여주므로,
+    // 목록은 이름 나열 + TOP1~3 배지만 남긴다(중복 설명 없이 TOP3 표시 요건은 배지로 충족).
     tbl.insertAdjacentHTML('beforeend',
-      `<div class="px-4 py-3 rounded-xl flex items-center justify-between min-w-0">
+      `<div class="px-4 py-3 rounded-xl flex items-center min-w-0">
          <span class="flex items-center whitespace-nowrap min-w-0">
            <b class="shrink-0">${escapeHtml(s.key)}</b><span class="mx-1 text-slate-500">|</span>
            <span class="truncate font-medium">${escapeHtml(s.name)}</span>${badge}
-         </span>
-         <span class="shrink-0 ml-3 text-right text-sm">
-           ${feel}
          </span>
        </div>`);
   });
