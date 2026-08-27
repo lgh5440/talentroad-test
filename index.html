@@ -1307,7 +1307,7 @@ function comparePctStabilized(a, b){
 }
 
 /* ===== 56가지 조합 설명 및 사역 예시 (기존과 동일) ===== */
-const COMBO = {
+const FALLBACK_COMBO = {
   "C+L+M": {title:"새신자 정착 개척자", desc:"돌봄(<span class='combo-key-highlight'>C</span>) 기반의 리더십(<span class='combo-key-highlight'>L</span>)으로 복음 전파(<span class='combo-key-highlight'>M</span>)를 체계화합니다.", examples:["새신자 양육 그룹장","전도팀 리더","국내외 아웃리치 사역 기획 및 인솔","위기 개척교회 컨설팅","관계 전도 훈련 리더"]},
   "C+L+P": {title:"영적 돌봄 리더", desc:"기도(<span class='combo-key-highlight'>P</span>)와 돌봄(<span class='combo-key-highlight'>C</span>)으로 공동체 리더십(<span class='combo-key-highlight'>L</span>)의 영적 깊이를 더합니다.", examples:["중보기도팀 리더","심방/소그룹 리더","영적 돌봄이 필요한 성도 관리","말씀 묵상 모임 리더","금요철야 또는 새벽기도회 기획"]},
   "C+L+R": {title:"공동체 혁신 코치", desc:"창의성(<span class='combo-key-highlight'>R</span>)을 활용한 리더십(<span class='combo-key-highlight'>L</span>)으로 돌봄(<span class='combo-key-highlight'>C</span>) 기반의 새로운 공동체를 만듭니다.", examples:["청년부/교육부 비전 수립 및 혁신","교회 내 갈등 조정 코치","새로운 소그룹 모델 개발","교회의 새 대안학교 설립 준비","소규모 공동체 실험"]},
@@ -1365,6 +1365,9 @@ const COMBO = {
   "R+T+W": {title:"예배 교육 혁신가", desc:"가르침(<span class='combo-key-highlight'>T</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 창의/혁신(<span class='combo-key-highlight'>R</span>)을 실천합니다.", examples:["창의적 예배 교육","혁신적 교육 예배","새로운 예배 교육 모델","교육과 예배의 창의적 통합","예배 교육 콘텐츠 혁신"]},
   "S+T+W": {title:"예배 교육 섬김자", desc:"가르침(<span class='combo-key-highlight'>T</span>)과 예배(<span class='combo-key-highlight'>W</span>)로 섬김/봉사(<span class='combo-key-highlight'>S</span>)를 실천합니다.", examples:["예배를 통한 교육 섬김","교육적 예배 봉사","섬김과 교육의 예배적 통합","예배적 교육 섬김","교육 예배 봉사자"]}
 };
+// 896-cell data is loaded at runtime; the legacy list above remains the fallback.
+let COMBO = FALLBACK_COMBO;
+let COMBO_SOURCE = 'fallback';
 
 
 const PERSONAS = {
@@ -3502,6 +3505,30 @@ const EXTENDED = /* __EXTENDED_BEGIN__ */ {
   }
 } /* __EXTENDED_END__ */;
 
+function jobsFromComboRecord(record) {
+  const values = record && record.types ? Object.values(record.types) : [];
+  return [...new Set(values.flatMap(v => String(v.job || '').split(',').map(s => s.trim()).filter(Boolean)))];
+}
+
+async function loadCombos896() {
+  try {
+    const response = await fetch('./combos.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`combos.json HTTP ${response.status}`);
+    const payload = await response.json();
+    const records = payload && payload.combos ? payload.combos : {};
+    const loaded = {};
+    Object.entries(records).forEach(([key, record]) => {
+      const jobs = jobsFromComboRecord(record);
+      if (!jobs.length) return;
+      loaded[key] = { ...(FALLBACK_COMBO[key] || {}), title: record.title || (FALLBACK_COMBO[key] || {}).title || key,
+        examples: (FALLBACK_COMBO[key] || {}).examples || [], jobs };
+    });
+    if (Object.keys(loaded).length) { COMBO = { ...FALLBACK_COMBO, ...loaded }; COMBO_SOURCE = 'combos.json'; }
+  } catch (error) {
+    console.warn('896-cell data unavailable; using legacy fallback.', error);
+  }
+}
+
 /* ===== 상태 관리 ===== */
 let state = { i:0, answers:[], rt:[], name:'', gender:'', age:'', region:'' };
 let qStart = 0, submitting = false;
@@ -3516,6 +3543,7 @@ function lockNav(lock){
 
 /* ===== 초기화 ===== */
 document.addEventListener('DOMContentLoaded', ()=>{
+  loadCombos896();
   const checkConsent = ()=>{
     const hasConsent = $('#consent').checked;
     const hasGender = $('#inp-gender').value;
@@ -3901,10 +3929,11 @@ function renderResult(){
       <ul class="ext-list">${ext.summary.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ul>
     </details>` : '';
 
-  const jobsBlock = (ext && ext.jobs && ext.jobs.length) ? `
+  const dataJobs = (combo && combo.jobs && combo.jobs.length) ? combo.jobs : (ext && ext.jobs ? ext.jobs : []);
+  const jobsBlock = dataJobs.length ? `
     <details class="ext-details">
-      <summary><span class="ext-summary-icon">💼</span> 직업 / 전문사역 TOP ${ext.jobs.length} <span class="ext-count">(접어두기 · 펼쳐 보기)</span></summary>
-      <ol class="ext-list ext-list-ol">${ext.jobs.map(j => `<li>${escapeHtml(j)}</li>`).join('')}</ol>
+      <summary><span class="ext-summary-icon">💼</span> 직업 / 전문사역 TOP ${Math.min(dataJobs.length, 10)} <span class="ext-count">(${COMBO_SOURCE})</span></summary>
+      <ol class="ext-list ext-list-ol">${dataJobs.slice(0, 10).map(j => `<li>${escapeHtml(j)}</li>`).join('')}</ol>
     </details>` : '';
 
   const hashtagsBlock = (ext && ext.hashtags && ext.hashtags.length) ? `
