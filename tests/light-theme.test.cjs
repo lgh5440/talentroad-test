@@ -14,6 +14,8 @@ const brightCore = appCss.slice(brightStart, brightCoreEnd);
 assert.match(appCss, /--eum-bg-0:\s*#EAF3FF;/, '앱 기본 배경은 강의 슬라이드의 연하늘이어야 합니다.');
 assert.match(appCss, /--eum-text:\s*#3A4568;/, '앱 기본 본문은 기준 정본(v1)의 본문색이어야 합니다.');
 assert.match(appCss, /--eum-heading:\s*#101A3D;/, '제목(h1급) 역할은 기준 정본(v1)의 제목색으로 고정돼야 합니다.');
+// 표면색(버튼·토스트)은 본문 토큰과 분리한다 — 2026-08-30 교차검증 REVISE 대응
+assert.match(appCss, /--eum-surface-ink:\s*#1E2A45;/, '버튼·토스트 표면색은 본문 토큰과 분리된 값으로 고정돼야 합니다.');
 assert.match(appCss, /--eum-line:\s*#E4ECF7;/, '앱 경계선은 강의 슬라이드의 선 토큰이어야 합니다.');
 assert.doesNotMatch(appCss, /--eum-bg-0:\s*#020818;/, '기존 어두운 앱 배경 토큰이 남아 있으면 안 됩니다.');
 assert.match(appCss, /body\.text-slate-100\s*\{[^}]*color:var\(--eum-text\)/s, 'Tailwind body 글자색을 밝은 테마 본문색으로 재정의해야 합니다.');
