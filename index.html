@@ -29,13 +29,14 @@
   :root{
     /* 기준: 90분 강의 슬라이드 lecture_slides_full.html :root (2026-08-25 실측) */
     --eum-navy:#1E2A45;
-    --eum-navytx:#243147;
+    --eum-navytx:#3A4568;
     --eum-sky:#93C5FD;
     --eum-pale:#EFF6FF;
     --eum-bd-blue:#BFDBFE;
     --eum-white:#FFFFFF;
     --eum-gold:#FFD98C;
     --eum-gold-deep:#9C6F0F;
+    --eum-bg-cfe:#CFE6FF;
     --eum-bg-0:#EAF3FF;
     --eum-bg-1:#F8FBFF;
     --eum-bg-2:#FFFFFF;
@@ -45,7 +46,7 @@
     --eum-line-strong:#BFDBFE;
     --eum-text:#1E2A45;
     --eum-muted:#64748B;
-    --eum-soft:#3B4759;
+    --eum-soft:#5C6A93;
     --eum-cyan:#2563EB;
     --eum-blue:#3B82F6;
     --eum-blue2:#2563EB;
@@ -655,10 +656,7 @@
   html{background:var(--eum-bg-0)}
   body.text-slate-100{
     color:var(--eum-text);
-    background:
-      radial-gradient(circle at 9% -8%, color-mix(in srgb, var(--eum-sky) 42%, transparent), transparent 30rem),
-      radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--eum-pale) 90%, transparent), transparent 27rem),
-      linear-gradient(180deg, var(--eum-bg-0) 0%, var(--eum-bg-2) 46%) !important;
+    background:linear-gradient(180deg, var(--eum-bg-cfe) 0%, var(--eum-bg-0) 45%, var(--eum-bg-1) 100%) !important;
   }
   body:before{
     background-image:
