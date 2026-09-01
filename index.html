@@ -27,8 +27,17 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root{
-    /* 기준: 90분 강의 슬라이드 lecture_slides_full.html :root (2026-08-25 실측) */
-    --eum-navy:#1E2A45;
+    /* ===== eum_웹토큰_v1 정본 primitives (Phase 2 전파, 값 그대로) =====
+       정본: D:\HONG\09_이음\01_부서\경영조정실\_디자인시스템\eum_웹토큰_v1.css */
+    --p-blue-main:#2F73F2; --p-blue-main-rgb:47,115,242;
+    --p-blue-deep:#1F5FD9; --p-blue-deep-rgb:31,95,217;
+    --p-blue-light:#6FA7FF; --p-blue-light-rgb:111,167,255;
+    /* 기준: 90분 강의 슬라이드 lecture_slides_full.html :root (2026-08-25 실측)
+       ★Phase 2: 아래 --eum-cyan/--eum-blue/--eum-blue2/--eum-violet/--eum-navy/--eum-surface-ink는
+       원래 정본과 다른 임의값(#2563EB·#3B82F6·#1E2A45)이었으나, 이번 파일럿 전파 티켓 성공기준 ①
+       (정본 hex 그대로, 임의 변형 금지)에 따라 위 정본 primitives를 참조하도록 값만 교체함
+       (변수 이름 체계는 이 파일의 기존 관례를 존중해 유지). */
+    --eum-navy:var(--p-blue-deep);
     --eum-navytx:#3A4568;
     --eum-sky:#93C5FD;
     --eum-pale:#EFF6FF;
@@ -46,13 +55,13 @@
     --eum-line-strong:#BFDBFE;
     --eum-text:#3A4568;
     --eum-heading:#101A3D;
-    --eum-surface-ink:#1E2A45;
+    --eum-surface-ink:var(--p-blue-deep);
     --eum-muted:#64748B;
     --eum-soft:#5C6A93;
-    --eum-cyan:#2563EB;
-    --eum-blue:#3B82F6;
-    --eum-blue2:#2563EB;
-    --eum-violet:#2563EB;
+    --eum-cyan:var(--p-blue-main);
+    --eum-blue:var(--p-blue-light);
+    --eum-blue2:var(--p-blue-deep);
+    --eum-violet:var(--p-blue-deep);
     --eum-orange:#9C6F0F;
     --eum-gold-ornament:var(--eum-gold);
   }
@@ -70,8 +79,8 @@
     min-height:100dvh;
     color:var(--eum-text);
     background:
-      radial-gradient(circle at 10% -10%, rgba(34,211,238,.18), transparent 30rem),
-      radial-gradient(circle at 90% 0%, rgba(139,92,246,.16), transparent 28rem),
+      radial-gradient(circle at 10% -10%, rgba(var(--p-blue-light-rgb),.18), transparent 30rem),
+      radial-gradient(circle at 90% 0%, rgba(var(--p-blue-deep-rgb),.16), transparent 28rem),
       linear-gradient(135deg, var(--eum-bg-0) 0%, var(--eum-bg-1) 50%, var(--eum-bg-2) 100%) !important;
     -webkit-font-smoothing:antialiased;
     overflow-x:hidden;
@@ -94,16 +103,16 @@
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    background:rgba(240,188,120,.1);
-    border:1px solid rgba(240,188,120,.3);
-    box-shadow:0 0 24px rgba(240,188,120,.28);
+    background:rgba(var(--p-blue-light-rgb),.1);
+    border:1px solid rgba(var(--p-blue-light-rgb),.3);
+    box-shadow:0 0 24px rgba(var(--p-blue-light-rgb),.28);
     overflow:hidden;
   }
   .brand-mark img{
     width:2.55rem;
     height:2.55rem;
     object-fit:contain;
-    filter:drop-shadow(0 0 10px rgba(240,188,120,.34));
+    filter:drop-shadow(0 0 10px rgba(var(--p-blue-light-rgb),.34));
   }
   .brand-kicker{
     color:var(--eum-cyan);
@@ -130,7 +139,7 @@
     width:18rem;
     height:18rem;
     border-radius:999px;
-    background:radial-gradient(circle, rgba(34,211,238,.22), transparent 66%);
+    background:radial-gradient(circle, rgba(var(--p-blue-light-rgb),.22), transparent 66%);
     pointer-events:none;
   }
   #screen-start:before{
@@ -142,12 +151,12 @@
     height:13rem;
     background:url("assets/eum_logo_cutout.png?v=2026050702") center/contain no-repeat;
     opacity:.08;
-    filter:drop-shadow(0 0 28px rgba(240,188,120,.36));
+    filter:drop-shadow(0 0 28px rgba(var(--p-blue-light-rgb),.36));
     pointer-events:none;
   }
   #screen-start > div{position:relative; z-index:1}
   .choice label{
-    background:rgba(2,8,24,.42) !important;
+    background:rgba(var(--p-blue-deep-rgb),.42) !important;
     border:1px solid var(--eum-line) !important;
     color:var(--eum-soft) !important;
     border-radius:.9rem !important;
@@ -156,21 +165,21 @@
   }
   .choice label:hover{
     transform:translateY(-1px);
-    border-color:rgba(34,211,238,.28) !important;
-    background:rgba(15,23,42,.9) !important;
+    border-color:rgba(var(--p-blue-light-rgb),.28) !important;
+    background:rgba(var(--p-blue-deep-rgb),.9) !important;
   }
   .choice input:checked + label{
-    border-color:rgba(34,211,238,.72) !important;
-    box-shadow:0 0 0 3px rgba(34,211,238,.16), 0 0 24px rgba(34,211,238,.16) !important;
-    background:linear-gradient(90deg, rgba(6,182,212,.2), rgba(37,99,235,.13)) !important;
+    border-color:rgba(var(--p-blue-light-rgb),.72) !important;
+    box-shadow:0 0 0 3px rgba(var(--p-blue-light-rgb),.16), 0 0 24px rgba(var(--p-blue-light-rgb),.16) !important;
+    background:linear-gradient(90deg, rgba(var(--p-blue-main-rgb),.2), rgba(var(--p-blue-main-rgb),.13)) !important;
     color:#fff !important;
   }
   .btn-disabled{opacity:.45; pointer-events:none}
   .btn-primary, #btn-start, #btn-next{
-    border:1px solid rgba(34,211,238,.38) !important;
-    background:linear-gradient(135deg, #0E7490, #1D4ED8) !important;
+    border:1px solid rgba(var(--p-blue-light-rgb),.38) !important;
+    background:linear-gradient(135deg, var(--p-blue-main), var(--p-blue-deep)) !important;
     color:white !important;
-    box-shadow:0 0 24px rgba(6,182,212,.28) !important;
+    box-shadow:0 0 24px rgba(var(--p-blue-main-rgb),.28) !important;
   }
   .btn-secondary, #btn-prev, #btn-download, #btn-retry{
     border:1px solid var(--eum-line) !important;
@@ -201,22 +210,22 @@
   }
   label, .form-label{color:var(--eum-soft) !important}
   input, select{
-    background:rgba(2,8,24,.62) !important;
+    background:rgba(var(--p-blue-deep-rgb),.62) !important;
     border:1px solid var(--eum-line) !important;
     color:var(--eum-text) !important;
     border-radius:.75rem !important;
     min-height:2.75rem;
   }
-  input::placeholder{color:#64748b}
-  select option{background:#0f172a; color:#f8fafc}
+  input::placeholder{color:var(--eum-muted)}
+  select option{background:#1F5FD9; color:#fff}
   input:focus, select:focus{
     outline:none !important;
-    border-color:rgba(34,211,238,.75) !important;
-    box-shadow:0 0 0 3px rgba(34,211,238,.13) !important;
+    border-color:rgba(var(--p-blue-light-rgb),.75) !important;
+    box-shadow:0 0 0 3px rgba(var(--p-blue-light-rgb),.13) !important;
   }
   #progress-bar{
     background:linear-gradient(90deg, var(--eum-cyan), var(--eum-blue)) !important;
-    box-shadow:0 0 18px rgba(34,211,238,.3);
+    box-shadow:0 0 18px rgba(var(--p-blue-light-rgb),.3);
   }
   .result-header{
     border-bottom:1px solid var(--eum-line) !important;
@@ -225,24 +234,24 @@
   }
   .combo-key-highlight{font-weight:900; color:var(--eum-cyan)}
   #top3 article{
-    background:linear-gradient(135deg, rgba(6,182,212,.14), rgba(139,92,246,.13)) !important;
-    border:1px solid rgba(34,211,238,.28) !important;
+    background:linear-gradient(135deg, rgba(var(--p-blue-main-rgb),.14), rgba(var(--p-blue-deep-rgb),.13)) !important;
+    border:1px solid rgba(var(--p-blue-light-rgb),.28) !important;
     color:var(--eum-text) !important;
     box-shadow:0 18px 50px rgba(0,0,0,.28) !important;
   }
   #top3 h5, #result-card h3, #result-card h4{color:#fff !important}
   #top3 p, #top3 li, #result-sub-info{color:var(--eum-soft) !important}
   #score-table > div{
-    background:rgba(2,8,24,.5) !important;
+    background:rgba(var(--p-blue-deep-rgb),.5) !important;
     border:1px solid var(--eum-line) !important;
     color:var(--eum-soft) !important;
     box-shadow:none !important;
   }
   #score-table b, #score-table .text-violet-800, #score-table .text-violet-600{color:var(--eum-cyan) !important}
   .score-badge{
-    background:rgba(34,211,238,.14) !important;
-    color:#a5f3fc !important;
-    border:1px solid rgba(34,211,238,.26);
+    background:rgba(var(--p-blue-light-rgb),.14) !important;
+    color:var(--p-blue-light) !important;
+    border:1px solid rgba(var(--p-blue-light-rgb),.26);
   }
   .persona-card{
     display:grid;
@@ -252,8 +261,8 @@
     margin-top:1.25rem;
     padding:1.25rem;
     border-radius:1rem;
-    border:1px solid rgba(240,188,120,.28);
-    background:linear-gradient(135deg, rgba(240,188,120,.12), rgba(6,182,212,.08));
+    border:1px solid rgba(var(--p-blue-light-rgb),.28);
+    background:linear-gradient(135deg, rgba(var(--p-blue-light-rgb),.12), rgba(var(--p-blue-main-rgb),.08));
   }
   .persona-image{
     width:100%;
@@ -262,7 +271,7 @@
     filter:drop-shadow(0 18px 28px rgba(0,0,0,.26));
   }
   .persona-label{
-    color:#f0bc78;
+    color:var(--p-blue-deep);
     font-size:.78rem;
     font-weight:900;
     letter-spacing:.16em;
@@ -279,9 +288,9 @@
     margin-top:.75rem;
     padding:.35rem .65rem;
     border-radius:999px;
-    background:rgba(2,8,24,.34);
-    border:1px solid rgba(240,188,120,.22);
-    color:#fde68a;
+    background:rgba(var(--p-blue-deep-rgb),.34);
+    border:1px solid rgba(var(--p-blue-light-rgb),.22);
+    color:#fff;
     font-size:.82rem;
     font-weight:800;
   }
@@ -459,11 +468,11 @@
     padding:1rem 1.15rem;
     border-radius:.85rem;
     border:1px solid var(--eum-line-strong);
-    background:linear-gradient(135deg, rgba(34,211,238,.06), rgba(139,92,246,.05));
+    background:linear-gradient(135deg, rgba(var(--p-blue-light-rgb),.06), rgba(var(--p-blue-deep-rgb),.05));
   }
   .ext-calling{
-    border:1px solid rgba(240,188,120,.45);
-    background:linear-gradient(135deg, rgba(240,188,120,.10), rgba(240,140,40,.05));
+    border:1px solid rgba(var(--p-blue-light-rgb),.45);
+    background:linear-gradient(135deg, rgba(var(--p-blue-light-rgb),.10), rgba(var(--p-blue-main-rgb),.05));
   }
   .ext-calling-text{
     font-size:1.05rem;
@@ -495,7 +504,7 @@
     text-align:left;
     border:1px solid var(--eum-line);
     border-radius:.85rem;
-    background:rgba(15,23,42,.45);
+    background:rgba(var(--p-blue-deep-rgb),.45);
     overflow:hidden;
   }
   .ext-details > summary{
@@ -545,8 +554,8 @@
     display:inline-block;
     padding:.25rem .65rem;
     border-radius:9999px;
-    background:rgba(34,211,238,.12);
-    border:1px solid rgba(34,211,238,.3);
+    background:rgba(var(--p-blue-light-rgb),.12);
+    border:1px solid rgba(var(--p-blue-light-rgb),.3);
     color:var(--eum-cyan);
     font-size:.78rem;
     font-weight:700;
@@ -748,19 +757,20 @@
   main .border-slate-300, main .border-gray-300, main .border-violet-600{border-color:var(--eum-muted) !important}
   .contact-footer{color:var(--eum-soft) !important}
 
-  /* ===== 이음 패밀리 광고 — 푸터 + 결과 화면 CTA ===== */
+  /* ===== 이음 패밀리 광고 — 푸터 + 결과 화면 CTA =====
+     ★Phase 2: 다크 네이비/보라 그라데이션(#0d1b3e/#1a1050/#1e3a8a)과 금색 그라데이션 텍스트를
+     오너 확정 지시(과거 '의도적 유지' 결정 무효)에 따라 블루+화이트로 예외 없이 전환. */
   .eum-family{
-    background:linear-gradient(150deg,#0d1b3e 0%,#1a1050 50%,#1e3a8a 100%);
-    border:1px solid rgba(252,211,77,.25);
-    box-shadow:0 8px 28px rgba(13,27,62,.45);
+    background:linear-gradient(150deg, var(--p-blue-light) 0%, var(--p-blue-main) 50%, var(--p-blue-deep) 100%);
+    border:1px solid rgba(255,255,255,.25);
+    box-shadow:0 8px 28px rgba(var(--p-blue-deep-rgb),.45);
     border-radius:16px;
     padding:18px;
     margin-top:24px;
   }
   .eum-family-title{
     font-weight:900; font-size:15px; margin-bottom:4px;
-    background:linear-gradient(135deg,#fef3c7 0%,#C9962B 50%,#8A6D1F 100%);
-    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    color:#fff;
   }
   .eum-family-sub{ font-size:12px; color:rgba(255,255,255,.7); margin-bottom:12px; line-height:1.55; }
   .eum-family-grid{ display:grid; gap:8px; }
@@ -796,9 +806,9 @@
     border-radius:999px;
     font-size:10px;
     font-weight:700;
-    background:rgba(201,150,43,.18);
-    color:#F0BC78;
-    border:1px solid rgba(201,150,43,.4);
+    background:rgba(255,255,255,.18);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.4);
     letter-spacing:.2px;
   }
   .eum-family-current-badge{
@@ -1054,12 +1064,13 @@ function renderRadarChart(scores, top3Keys){
     const [x,y] = pt(i, R*norm[k]/100);
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ');
-  svg += `<polygon points="${poly}" fill="rgba(37,99,235,.24)" stroke="#2563eb" stroke-width="2.5"/>`;
+  svg += `<polygon points="${poly}" fill="rgba(31,95,217,.24)" stroke="#1F5FD9" stroke-width="2.5"/>`;
 
   RADAR_ORDER.forEach((k,i)=>{
     const [x,y] = pt(i, R*norm[k]/100);
     const isTop = top3Keys.includes(k);
-    svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isTop?4:2.5}" fill="${isTop?'#9C6F0F':'#2563eb'}"/>`;
+    /* ★Phase 2: top3 마커 강조색을 금색(#9C6F0F)에서 블루 계열(라이트블루)로 예외 없이 전환 */
+    svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isTop?4:2.5}" fill="${isTop?'#6FA7FF':'#1F5FD9'}"/>`;
   });
 
   RADAR_ORDER.forEach((k,i)=>{
@@ -1068,7 +1079,7 @@ function renderRadarChart(scores, top3Keys){
     let anchor = 'middle';
     if(x < cx - 10) anchor = 'end';
     else if(x > cx + 10) anchor = 'start';
-    svg += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="15" font-weight="700" fill="#9C6F0F">${escapeHtml(RADAR_SHORT_NAME[k])}</text>`;
+    svg += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="15" font-weight="700" fill="#1F5FD9">${escapeHtml(RADAR_SHORT_NAME[k])}</text>`;
   });
 
   svg += `</svg>`;
