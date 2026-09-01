@@ -383,29 +383,31 @@
   #result-card.pdf-export *{
     box-shadow:none !important;
   }
-  /* ===== 공유 / 이미지 저장 버튼 (브랜드 토큰: gold #C9962B / navy #1B3A5C / cream #FFF8EC) ===== */
+  /* ===== 공유 / 이미지 저장 버튼 — Phase 2 재스캔(2026-09-01): gold/navy 브랜드 토큰이 라이브 UI에
+     예외적으로 남아있던 것을 발견해 정본 블루로 예외 없이 교체(정본 §3 "무지개색·과도한 그라데이션
+     금지"+오너 "예외 없음" 지시). 기존 --eum-cyan(=정본 main blue)/--eum-blue2(=정본 deep blue) 참조. */
   #btn-share{
-    background:#C9962B;
-    color:#020818;
-    border:1px solid #C9962B;
-    box-shadow:0 4px 12px rgba(201,150,43,.28);
+    background:var(--eum-blue2);
+    color:#fff;
+    border:1px solid var(--eum-blue2);
+    box-shadow:0 4px 12px rgba(var(--p-blue-deep-rgb),.28);
   }
   #btn-share:hover:not(:disabled){
-    background:#F0BC78;
-    border-color:#F0BC78;
+    background:var(--eum-cyan);
+    border-color:var(--eum-cyan);
   }
   #btn-share:disabled{
     opacity:.55;
     cursor:wait;
   }
   #btn-image{
-    background:#1B3A5C;
-    color:#FFF8EC;
-    border:1px solid #1B3A5C;
+    background:var(--eum-cyan);
+    color:#fff;
+    border:1px solid var(--eum-cyan);
   }
   #btn-image:hover:not(:disabled){
-    background:#2a5080;
-    border-color:#2a5080;
+    background:var(--eum-blue2);
+    border-color:var(--eum-blue2);
   }
   #btn-image:disabled{
     opacity:.55;
@@ -413,7 +415,7 @@
   }
   #btn-share:focus-visible,
   #btn-image:focus-visible{
-    outline:3px solid #F0BC78;
+    outline:3px solid var(--eum-blue2);
     outline-offset:2px;
   }
   /* 토스트 메시지 (공유·이미지 결과 안내) */
@@ -422,15 +424,15 @@
     left:50%;
     bottom:32px;
     transform:translateX(-50%);
-    background:#1B3A5C;
-    color:#FFF8EC;
+    background:var(--eum-blue2);
+    color:#fff;
     padding:14px 22px;
     border-radius:12px;
     font-weight:600;
     font-size:15px;
-    box-shadow:0 8px 24px rgba(0,0,0,.35);
+    box-shadow:0 8px 24px rgba(var(--p-blue-deep-rgb),.35);
     z-index:9999;
-    border:1px solid #C9962B;
+    border:1px solid var(--eum-cyan);
     max-width:90vw;
     text-align:center;
     transition:opacity .3s ease;
@@ -746,8 +748,11 @@
   #btn-share:hover:not(:disabled){background:var(--eum-blue); border-color:var(--eum-blue)}
   #btn-image{background:var(--eum-surface-ink); color:var(--eum-white); border-color:var(--eum-surface-ink)}
   #btn-image:hover:not(:disabled){background:var(--eum-soft); border-color:var(--eum-soft)}
-  #btn-share:focus-visible, #btn-image:focus-visible{outline-color:var(--eum-gold-ornament)}
-  .toast-eum{background:var(--eum-surface-ink); color:var(--eum-white); box-shadow:0 8px 24px color-mix(in srgb, var(--eum-navy) 20%, transparent); border-color:var(--eum-gold)}
+  /* ★Phase 2 재스캔: 이 셀렉터가 위쪽(공유/이미지 저장 버튼 블록)과 중복 정의돼 있어 CSS 캐스케이드상
+     여기(후반부)가 실제 렌더를 이긴다 — outline/border의 gold 참조만 블루로 교체(배경·글자색은
+     이 블록에서 이미 --eum-cyan/--eum-surface-ink=정본 블루를 참조 중이었음, 변경 없음). */
+  #btn-share:focus-visible, #btn-image:focus-visible{outline-color:var(--eum-blue2)}
+  .toast-eum{background:var(--eum-surface-ink); color:var(--eum-white); box-shadow:0 8px 24px color-mix(in srgb, var(--eum-navy) 20%, transparent); border-color:var(--eum-cyan)}
   header .text-white, main .text-white{color:var(--eum-text) !important}
   h1, h2{color:var(--eum-heading) !important}
   header .text-slate-300, main .text-slate-300{color:var(--eum-soft) !important}
