@@ -770,20 +770,29 @@
 
   /* ===== 이음 패밀리 광고 — 푸터 + 결과 화면 CTA =====
      ★Phase 2: 다크 네이비/보라 그라데이션(#0d1b3e/#1a1050/#1e3a8a)과 금색 그라데이션 텍스트를
-     오너 확정 지시(과거 '의도적 유지' 결정 무효)에 따라 블루+화이트로 예외 없이 전환. */
+     오너 확정 지시(과거 '의도적 유지' 결정 무효)에 따라 블루+화이트로 예외 없이 전환했었다.
+     ★2026-09-02 재수정: 그 "블루+화이트" 전환이 실측 결과 배경원칙 위반으로 재확인됨 —
+     너비 768px·높이 206px(뷰포트 900px 중 스크롤 없이 노출, 페이지 전체 높이 1135px의 18%)의
+     큰 면적을 옅은블루→진한블루 대각선으로 전면 채색, 정본 §3 "진한 파랑은 accent/버튼/
+     테두리로만(큰 면적 진한 채색 금지)" 정면 위반. WCAG 실측: 흰 제목텍스트 on 그라데이션
+     밝은쪽(#6FA7FF)=2.43:1로 AA(4.5:1) 미달(정본 §19 "블루와 화이트 중심의 시각 언어 유지"·
+     텍스트 가독 요건도 위반). 이 파일 자체의 다른 모든 섹션(본문 배경·글래스패널)도 이미
+     화이트/옅은블루 계열이라 이 섹션만 예외적으로 진한 배경이었음 — 페이지 내부 일관성도 위반.
+     → 화이트/옅은 배경 패널 + 진한 블루 텍스트로 전환(다른 앱들의 최종 재작업 라운드와 동일
+     방향), 개별 앱 accent 색상은 카드 단위 소면적 틴트로만 유지. */
   .eum-family{
-    background:linear-gradient(150deg, var(--p-blue-light) 0%, var(--p-blue-main) 50%, var(--p-blue-deep) 100%);
-    border:1px solid rgba(255,255,255,.25);
-    box-shadow:0 8px 28px rgba(var(--p-blue-deep-rgb),.45);
+    background:linear-gradient(150deg, var(--eum-bg-0) 0%, var(--eum-pale) 100%);
+    border:1px solid var(--eum-bd-blue);
+    box-shadow:0 8px 24px rgba(var(--p-blue-deep-rgb),.14);
     border-radius:16px;
     padding:18px;
     margin-top:24px;
   }
   .eum-family-title{
     font-weight:900; font-size:15px; margin-bottom:4px;
-    color:#fff;
+    color:var(--eum-heading);
   }
-  .eum-family-sub{ font-size:12px; color:rgba(255,255,255,.7); margin-bottom:12px; line-height:1.55; }
+  .eum-family-sub{ font-size:12px; color:var(--eum-soft); margin-bottom:12px; line-height:1.55; }
   .eum-family-grid{ display:grid; gap:8px; }
   .eum-family-grid.cols-5{ grid-template-columns:repeat(5,1fr); }
   .eum-family-grid.cols-4{ grid-template-columns:repeat(4,1fr); }
@@ -804,12 +813,12 @@
   .eum-family-card.is-coming-soon{ opacity:1; cursor:not-allowed; }
   .eum-family-card.is-coming-soon:hover{ transform:none; }
   .eum-family-emoji{ font-size:28px; margin-bottom:4px; line-height:1; font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",emoji; }
-  .eum-family-name{ font-weight:900; font-size:12px; color:#fff; line-height:1.2; }
-  .eum-family-tag{ font-size:10.5px; color:rgba(255,255,255,.7); margin-top:4px; line-height:1.35; }
-  .eum-family-card.is-current .eum-family-name{ color:rgba(255,255,255,.6); }
-  .eum-family-card.is-current .eum-family-tag{ color:rgba(255,255,255,.4); }
-  .eum-family-card.is-coming-soon .eum-family-name{ color:rgba(255,255,255,.75); }
-  .eum-family-card.is-coming-soon .eum-family-tag{ color:rgba(255,255,255,.5); }
+  .eum-family-name{ font-weight:900; font-size:12px; color:var(--eum-heading); line-height:1.2; }
+  .eum-family-tag{ font-size:10.5px; color:var(--eum-soft); margin-top:4px; line-height:1.35; }
+  .eum-family-card.is-current .eum-family-name{ color:var(--eum-muted); }
+  .eum-family-card.is-current .eum-family-tag{ color:rgba(58,69,104,.5); }
+  .eum-family-card.is-coming-soon .eum-family-name{ color:var(--eum-text); }
+  .eum-family-card.is-coming-soon .eum-family-tag{ color:var(--eum-soft); }
   .eum-family-coming-badge{
     display:inline-block;
     margin-top:6px;
@@ -817,14 +826,14 @@
     border-radius:999px;
     font-size:10px;
     font-weight:700;
-    background:rgba(255,255,255,.18);
-    color:#fff;
-    border:1px solid rgba(255,255,255,.4);
+    background:rgba(var(--p-blue-deep-rgb),.08);
+    color:var(--eum-blue2);
+    border:1px solid rgba(var(--p-blue-deep-rgb),.2);
     letter-spacing:.2px;
   }
   .eum-family-current-badge{
     margin-top:6px; padding:2px 8px; border-radius:999px;
-    background:rgba(255,255,255,.08); color:rgba(255,255,255,.6);
+    background:rgba(var(--p-blue-deep-rgb),.06); color:var(--eum-soft);
     font-size:9.5px; font-weight:700; letter-spacing:.05em;
   }
   /* PDF 내보내기 시 광고 영역 제거 */
@@ -1152,15 +1161,15 @@ function renderEumFamily(){
       const isCurrent = app.key === EUM_CURRENT;
       const isComingSoon = app.status === 'coming-soon' || !app.url;
       const bg = isCurrent
-        ? 'rgba(255,255,255,0.04)'
+        ? 'rgba(255,255,255,.7)'
         : isComingSoon
-          ? 'rgba(255,255,255,0.03)'
-          : `linear-gradient(140deg, rgba(255,255,255,0.06), ${app.accent}1f)`;
+          ? 'rgba(255,255,255,.55)'
+          : `linear-gradient(140deg, rgba(255,255,255,.92), ${app.accent}22)`;
       const border = isCurrent
-        ? 'rgba(255,255,255,0.08)'
+        ? 'rgba(31,95,217,.12)'
         : isComingSoon
-          ? 'rgba(255,255,255,0.1)'
-          : `${app.accent}55`;
+          ? 'rgba(31,95,217,.10)'
+          : `${app.accent}66`;
       const badge = isCurrent
         ? '<span class="eum-family-current-badge">현재 앱</span>'
         : isComingSoon
