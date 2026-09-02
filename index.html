@@ -813,6 +813,7 @@
   .eum-family-card.is-coming-soon{ opacity:1; cursor:not-allowed; }
   .eum-family-card.is-coming-soon:hover{ transform:none; }
   .eum-family-emoji{ width:48px; height:48px; object-fit:cover; border-radius:8px; margin-bottom:4px; }
+  .eum-family-emoji[aria-hidden="true"]{ width:auto; height:auto; object-fit:initial; border-radius:0; font-size:28px; line-height:1; font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",emoji; }
   .eum-family-name{ font-weight:900; font-size:12px; color:var(--eum-heading); line-height:1.2; }
   .eum-family-tag{ font-size:10.5px; color:var(--eum-soft); margin-top:4px; line-height:1.35; }
   .eum-family-card.is-current .eum-family-name{ color:var(--eum-muted); }
@@ -1175,9 +1176,12 @@ function renderEumFamily(){
         ? '<span class="eum-family-current-badge">현재 앱</span>'
         : isComingSoon
           ? '<span class="eum-family-coming-badge">준비 중</span>'
-          : '';
+        : '';
+      const icon = app.key === 'myrealid'
+        ? `<span class="eum-family-emoji" aria-hidden="true">${escapeHtml(app.emoji)}</span>`
+        : `<img class="eum-family-emoji" src="assets/icons-3d/${EUM_FAMILY_ICON[app.key]}.png" alt="${escapeHtml(app.name)} 아이콘">`;
       const inner = `
-        <img class="eum-family-emoji" src="assets/icons-3d/${EUM_FAMILY_ICON[app.key]}.png" alt="${escapeHtml(app.name)} 아이콘">
+        ${icon}
         <p class="eum-family-name">${escapeHtml(app.name)}</p>
         <p class="eum-family-tag">${escapeHtml(app.tagline)}</p>
         ${badge}
