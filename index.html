@@ -1178,9 +1178,7 @@ function renderEumFamily(){
         : isComingSoon
           ? '<span class="eum-family-coming-badge">준비 중</span>'
         : '';
-      const icon = app.key === 'myrealid'
-        ? `<span class="eum-family-emoji" aria-hidden="true">${escapeHtml(app.emoji)}</span>`
-        : `<img class="eum-family-emoji" src="assets/icons-3d/${EUM_FAMILY_ICON[app.key]}.png" alt="${escapeHtml(app.name)} 아이콘">`;
+      const icon = `<img class="eum-family-emoji" src="assets/icons-3d/${EUM_FAMILY_ICON[app.key]}.png" alt="${escapeHtml(app.name)} 아이콘">`;
       const inner = `
         ${icon}
         <p class="eum-family-name">${escapeHtml(app.name)}</p>
