@@ -51,7 +51,7 @@
   function ensureHomeEntry() {
     const intro = document.querySelector("#screen-start h2");
     if (!intro || document.querySelector("[data-open-persona-gallery]")) return;
-    intro.insertAdjacentHTML("afterend", `<button class="persona-gallery-home-entry" type="button" data-open-persona-gallery aria-expanded="false" aria-controls="persona-gallery">검사 없이 성경 인물 카드 56장 보기</button>`);
+    intro.insertAdjacentHTML("afterend", `<button class="persona-gallery-home-entry" type="button" data-open-persona-gallery aria-expanded="false" aria-controls="persona-gallery">성경 인물 카드 56장 보기</button>`);
   }
 
   function openPersonaDetail(key) {
@@ -118,7 +118,7 @@
     const open = gallery.hidden;
     gallery.hidden = !open;
     button.setAttribute("aria-expanded", String(open));
-    button.textContent = open ? "인물 카드 56장 접기" : (button.classList.contains("persona-gallery-home-entry") ? "검사 없이 성경 인물 카드 56장 보기" : "인물 카드 56장 모두 보기");
+    button.textContent = open ? "인물 카드 56장 접기" : (button.classList.contains("persona-gallery-home-entry") ? "성경 인물 카드 56장 보기" : "인물 카드 56장 모두 보기");
     if (open) gallery.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 })();
