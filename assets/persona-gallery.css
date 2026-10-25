@@ -1,0 +1,16 @@
+.persona-title-code{display:flex;align-items:baseline;gap:.65rem;flex-wrap:wrap}
+.persona-combo-code{display:inline-flex;align-items:center;justify-content:center;padding:.16rem .52rem;border:1px solid var(--eum-gold);border-radius:999px;background:var(--eum-pale);color:var(--eum-gold-deep);font-size:.82rem;font-weight:900;letter-spacing:.06em}
+.persona-job-links{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.85rem}
+.persona-job-links a,.persona-gallery-toggle{display:inline-flex;align-items:center;min-height:44px;padding:.45rem .75rem;border:1px solid var(--eum-bd-blue);border-radius:.75rem;background:var(--eum-pale);color:var(--eum-navytx);font-weight:750;text-decoration:none}
+.persona-gallery-toggle{margin-top:.9rem;cursor:pointer}
+.persona-gallery{margin-top:1rem;padding:1rem;border:1px solid var(--eum-bd-blue);border-radius:1rem;background:rgba(255,255,255,.94);color:var(--eum-text)}
+.persona-gallery h3{margin:0 0 .35rem;color:var(--eum-heading);font-size:1.35rem;font-weight:900}
+.persona-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.8rem;margin-top:1rem}
+.persona-gallery-card{display:grid;grid-template-columns:76px minmax(0,1fr);gap:.65rem;align-items:start;padding:.7rem;border:1px solid var(--eum-line-strong);border-radius:.85rem;background:white}
+.persona-gallery-card img{width:76px;height:102px;object-fit:contain;border-radius:.5rem;background:#fffaf0}
+.persona-gallery-title{display:flex;align-items:baseline;gap:.35rem;flex-wrap:wrap;color:var(--eum-heading);font-weight:900}
+.persona-gallery-code{color:var(--eum-gold-deep);font-size:.76rem;font-weight:900}
+.persona-gallery-card p{margin:.3rem 0;color:var(--eum-navytx);font-size:.82rem;line-height:1.45}
+.persona-gallery-jobs{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:.35rem}
+.persona-gallery-jobs a{display:inline-flex;align-items:center;min-height:40px;padding:.3rem .55rem;border-radius:.55rem;background:var(--eum-pale);color:var(--eum-navytx);font-size:.8rem;font-weight:700;text-decoration:none}
+.persona-gallery a:focus-visible,.persona-gallery button:focus-visible{outline:3px solid var(--p-blue-deep);outline-offset:2px}
