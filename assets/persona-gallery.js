@@ -17,6 +17,20 @@
     }).join("");
   }
 
+  const explanation = window.PERSONA_EXPLAIN_DATA;
+  function scriptureMarkup(section) {
+    return `<blockquote><p>${section.verses.map(v => `<sup>${v.n}</sup>${escapeHtml(v.t)}`).join(" ")}</p><cite><a href="${escapeHtml(section.url)}" target="_blank" rel="noopener">${escapeHtml(section.ref)}</a> · 개역한글</cite></blockquote>`;
+  }
+  function explanationMarkup(persona, headingId = "") {
+    const content = explanation?.byKey?.[persona.key];
+    if (!content) return "";
+    const meanings = persona.key.split("+").map(code => `<span><b>${escapeHtml(code)}</b>${escapeHtml(data.giftByCode[code])}</span>`).join("");
+    return `<div class="persona-detail-body"><img class="persona-detail-image" src="${escapeHtml(persona.image)}" alt="${escapeHtml(persona.person)} 카드 그림" width="520" height="780">
+      <div class="persona-detail-intro"><h2${headingId ? ` id="${headingId}"` : ""}><span>${escapeHtml(persona.person)}</span><span class="persona-detail-code">${escapeHtml(persona.code)}</span></h2>
+      <p class="persona-letter-meanings">${meanings}</p><h3>인물소개</h3><p>${escapeHtml(content.intro)}</p></div></div>
+      <section class="persona-scripture"><h3>관련말씀</h3>${content.main.map(scriptureMarkup).join("")}
+      ${content.more.length ? `<details><summary>말씀 더보기</summary>${content.more.map(scriptureMarkup).join("")}</details>` : ""}</section>`;
+  }
   function verseMarkup(persona) {
     const refs = [...new Set((persona.sources || []).map(source => source.ref).filter(Boolean))];
     return refs.map(ref => `<li>${escapeHtml(ref)}</li>`).join("");
@@ -25,8 +39,8 @@
   function galleryMarkup() {
     return `<section id="persona-gallery" class="persona-gallery" aria-labelledby="persona-gallery-heading" hidden>
       <h3 id="persona-gallery-heading">성경 인물 카드 56장</h3>
-      <p>카드를 눌러 승인된 인물 이야기와 관련 구절을 읽고, 연결된 직업을 살펴보세요.</p>
-      <p><a href="${allJobsHref}" target="_blank" rel="noopener">소명지도 직업 모두 보기</a></p>
+      <p>카드를 눌러 인물소개와 관련말씀을 읽고, 연결된 직업을 살펴보세요.</p>
+      <p><a href="${allJobsHref}" target="_blank" rel="noopener">소명지도 직업 모두 보기</a></p><p class="persona-reference">참고: 인물과 유형의 연결은 대화를 돕는 앱의 해석입니다. 관련말씀은 <a href="https://www.bskorea.or.kr/bible/korbibReadpage.php?version=HAN" target="_blank" rel="noopener">대한성서공회 개역한글</a> 본문을 따릅니다.</p>
       <div class="persona-gallery-grid">${entries.map(persona => `<article class="persona-gallery-card" data-persona-key="${escapeHtml(persona.key)}">
         <button class="persona-gallery-card-open" type="button" data-open-persona-detail data-persona-key="${escapeHtml(persona.key)}" aria-label="${escapeHtml(persona.person)} 상세 보기">
           <img src="${escapeHtml(persona.image)}" alt="${escapeHtml(persona.person)} 카드 그림" loading="lazy" width="160" height="214">
@@ -59,13 +73,8 @@
     const dialog = document.getElementById("persona-detail-dialog");
     const content = document.getElementById("persona-detail-content");
     if (!persona || !dialog || !content) return;
-    const story = persona.story || persona.feature || persona.short || "";
-    const verses = verseMarkup(persona);
-    content.innerHTML = `<h2 id="persona-detail-heading"><span>${escapeHtml(persona.person)}</span><span class="persona-detail-code">${escapeHtml(persona.code)}</span></h2>
-      <img class="persona-detail-image" src="${escapeHtml(persona.image)}" alt="${escapeHtml(persona.person)} 카드 그림" width="160" height="214">
-      <section><h3>인물 이야기</h3><p>${escapeHtml(story)}</p></section>
-      <section><h3>관련 구절</h3>${verses ? `<ul>${verses}</ul>` : "<p>등록된 구절 표기가 없습니다.</p>"}</section>
-      <section><h3>연결 직업</h3><div class="persona-gallery-jobs">${jobsMarkup(persona)}</div></section>`;
+    content.innerHTML = `${explanationMarkup(persona, "persona-detail-heading")}
+      <section><h3>함께 살펴볼 직업</h3><div class="persona-gallery-jobs">${jobsMarkup(persona)}</div></section>`;
     dialog.showModal();
   }
 
@@ -76,14 +85,9 @@
     const persona = data.byKey[comboKey];
     if (!card || !persona) return;
     card.dataset.personaKey = comboKey;
-    card.innerHTML = `<div>
-      <div class="persona-label">성경 인물 카드 · 검사 결과 연결</div>
-      <div class="persona-title-code"><h5 class="persona-name">${escapeHtml(persona.person)}</h5><span class="persona-combo-code">${escapeHtml(persona.code)}</span></div>
-      <div class="persona-verse">${escapeHtml(persona.gifts.join(" · "))}</div>
-      <p class="persona-summary">${escapeHtml(persona.short || persona.feature || persona.story || "")}</p>
+    card.innerHTML = `<div class="persona-result-explanation">${explanationMarkup(persona)}
       <div class="persona-job-links" aria-label="함께 살펴볼 직업">${jobsMarkup(persona)}</div>
-      <button class="persona-gallery-toggle" type="button" data-open-persona-gallery aria-expanded="false" aria-controls="persona-gallery">인물 카드 56장 모두 보기</button>
-    </div><img class="persona-image" src="${escapeHtml(persona.image)}" alt="${escapeHtml(persona.person)} 카드 그림" loading="eager">`;
+      <button class="persona-gallery-toggle" type="button" data-open-persona-gallery aria-expanded="false" aria-controls="persona-gallery">인물 카드 56장 모두 보기</button></div>`;
     ensureGallery();
   }
 
