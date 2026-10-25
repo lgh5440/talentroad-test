@@ -3,14 +3,26 @@
 .persona-job-links{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.85rem}
 .persona-job-links a,.persona-gallery-toggle{display:inline-flex;align-items:center;min-height:44px;padding:.45rem .75rem;border:1px solid var(--eum-bd-blue);border-radius:.75rem;background:var(--eum-pale);color:var(--eum-navytx);font-weight:750;text-decoration:none}
 .persona-gallery-toggle{margin-top:.9rem;cursor:pointer}
+.persona-gallery-home-entry{display:inline-flex;align-items:center;min-height:44px;margin:.5rem 0;padding:.55rem .9rem;border:1px solid var(--eum-bd-blue);border-radius:.75rem;background:var(--eum-pale);color:var(--eum-navytx);font-weight:800;cursor:pointer}
 .persona-gallery{margin-top:1rem;padding:1rem;border:1px solid var(--eum-bd-blue);border-radius:1rem;background:rgba(255,255,255,.94);color:var(--eum-text)}
 .persona-gallery h3{margin:0 0 .35rem;color:var(--eum-heading);font-size:1.35rem;font-weight:900}
 .persona-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.8rem;margin-top:1rem}
 .persona-gallery-card{display:grid;grid-template-columns:76px minmax(0,1fr);gap:.65rem;align-items:start;padding:.7rem;border:1px solid var(--eum-line-strong);border-radius:.85rem;background:white}
+.persona-gallery-card-open{grid-column:1/-1;display:grid;grid-template-columns:76px minmax(0,1fr);gap:.65rem;align-items:start;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
 .persona-gallery-card img{width:76px;height:102px;object-fit:contain;border-radius:.5rem;background:#fffaf0}
 .persona-gallery-title{display:flex;align-items:baseline;gap:.35rem;flex-wrap:wrap;color:var(--eum-heading);font-weight:900}
 .persona-gallery-code{color:var(--eum-gold-deep);font-size:.76rem;font-weight:900}
 .persona-gallery-card p{margin:.3rem 0;color:var(--eum-navytx);font-size:.82rem;line-height:1.45}
+.persona-gallery-summary,.persona-gallery-gifts{display:block;margin-top:.3rem;color:var(--eum-navytx);font-size:.82rem;line-height:1.45}
 .persona-gallery-jobs{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:.35rem}
 .persona-gallery-jobs a{display:inline-flex;align-items:center;min-height:40px;padding:.3rem .55rem;border-radius:.55rem;background:var(--eum-pale);color:var(--eum-navytx);font-size:.8rem;font-weight:700;text-decoration:none}
 .persona-gallery a:focus-visible,.persona-gallery button:focus-visible{outline:3px solid var(--p-blue-deep);outline-offset:2px}
+.persona-detail-dialog{width:min(680px,calc(100vw - 2rem));max-height:86vh;overflow:auto;border:1px solid var(--eum-bd-blue);border-radius:1rem;padding:1.25rem;background:var(--eum-bg-1);color:var(--eum-text);box-shadow:0 20px 60px #102e4c55}
+.persona-detail-dialog::backdrop{background:#10243bb3}
+.persona-detail-dialog h2{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap;margin:.3rem 0 1rem;color:var(--eum-heading);font-size:1.6rem;font-weight:900}
+.persona-detail-code{color:var(--eum-gold-deep);font-size:.9rem}
+.persona-detail-dialog h3{margin:1rem 0 .35rem;color:var(--eum-heading);font-weight:850}
+.persona-detail-dialog p,.persona-detail-dialog li{line-height:1.65}
+.persona-detail-dialog ul{padding-left:1.25rem}
+.persona-detail-image{float:right;width:120px;height:160px;object-fit:contain;margin:0 0 .75rem 1rem;border-radius:.7rem;background:#fffaf0}
+.persona-detail-close{float:right;min-height:40px;padding:.4rem .7rem;border:1px solid var(--eum-bd-blue);border-radius:.6rem;background:var(--eum-pale);color:var(--eum-navytx);font-weight:800;cursor:pointer}
